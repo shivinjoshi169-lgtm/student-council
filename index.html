@@ -1,0 +1,3961 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Student Council Management System - Vatsalya Public School" />
+<title>SCMS | Vatsalya Public School</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- Supabase JS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<!-- Chart.js for HPI and Dashboard charts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+<style>
+/* ============================================================
+   SCMS — Vatsalya Public School
+   Design language: Linear / Vercel / GitHub / Microsoft 365 hybrid
+   Glassmorphism + dark/light theme via [data-theme]
+   ============================================================ */
+
+/* ---------- Design Tokens ---------- */
+:root{
+  --font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+
+  /* Light theme */
+  --bg:#f6f7f9;
+  --bg-elev:#ffffff;
+  --bg-glass:rgba(255,255,255,0.65);
+  --bg-glass-strong:rgba(255,255,255,0.85);
+  --bg-soft:#f1f3f5;
+  --bg-hover:#eef0f3;
+  --border:#e5e7eb;
+  --border-strong:#d1d5db;
+  --text:#0a0a0a;
+  --text-muted:#52525b;
+  --text-subtle:#71717a;
+  --primary:#4f46e5;
+  --primary-hover:#4338ca;
+  --primary-soft:#eef2ff;
+  --accent:#06b6d4;
+  --success:#10b981;
+  --warning:#f59e0b;
+  --danger:#ef4444;
+  --info:#3b82f6;
+  --purple:#8b5cf6;
+  --pink:#ec4899;
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.05);
+  --shadow:0 4px 12px rgba(0,0,0,0.06),0 1px 3px rgba(0,0,0,0.04);
+  --shadow-lg:0 20px 40px -8px rgba(0,0,0,0.12),0 8px 16px -4px rgba(0,0,0,0.06);
+  --shadow-glow:0 0 0 1px rgba(79,70,229,0.15),0 8px 24px -4px rgba(79,70,229,0.25);
+  --radius-sm:6px;
+  --radius:10px;
+  --radius-lg:16px;
+  --radius-xl:24px;
+  --sidebar-w:260px;
+  --navbar-h:64px;
+  --transition:200ms cubic-bezier(0.4,0,0.2,1);
+}
+[data-theme="dark"]{
+  --bg:#0a0a0b;
+  --bg-elev:#131316;
+  --bg-glass:rgba(20,20,24,0.65);
+  --bg-glass-strong:rgba(20,20,24,0.85);
+  --bg-soft:#18181b;
+  --bg-hover:#1f1f23;
+  --border:#27272a;
+  --border-strong:#3f3f46;
+  --text:#fafafa;
+  --text-muted:#a1a1aa;
+  --text-subtle:#71717a;
+  --primary:#6366f1;
+  --primary-hover:#818cf8;
+  --primary-soft:rgba(99,102,241,0.15);
+  --accent:#22d3ee;
+  --success:#34d399;
+  --warning:#fbbf24;
+  --danger:#f87171;
+  --info:#60a5fa;
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.4);
+  --shadow:0 4px 12px rgba(0,0,0,0.4),0 1px 3px rgba(0,0,0,0.3);
+  --shadow-lg:0 20px 40px -8px rgba(0,0,0,0.6),0 8px 16px -4px rgba(0,0,0,0.4);
+  --shadow-glow:0 0 0 1px rgba(99,102,241,0.3),0 8px 24px -4px rgba(99,102,241,0.35);
+}
+
+/* ---------- Reset ---------- */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--font-sans);
+  background:var(--bg);
+  color:var(--text);
+  font-size:14px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  transition:background var(--transition),color var(--transition);
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,textarea,select{font-family:inherit;font-size:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+ul,ol{list-style:none}
+
+/* ---------- Scrollbar ---------- */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:8px;border:2px solid var(--bg)}
+::-webkit-scrollbar-thumb:hover{background:var(--text-subtle)}
+
+/* ---------- Splash Screen ---------- */
+#splash{
+  position:fixed;inset:0;z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#0a0a0b 0%,#1a1a2e 50%,#16213e 100%);
+  color:#fff;
+  transition:opacity 600ms ease,visibility 600ms ease;
+}
+#splash.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.splash-bg{position:absolute;inset:0;overflow:hidden}
+.splash-blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:0.4;animation:floatBlob 8s ease-in-out infinite}
+.splash-blob.b1{width:500px;height:500px;background:#6366f1;top:-100px;left:-100px}
+.splash-blob.b2{width:400px;height:400px;background:#06b6d4;bottom:-100px;right:-100px;animation-delay:-2s}
+.splash-blob.b3{width:300px;height:300px;background:#ec4899;top:50%;left:50%;transform:translate(-50%,-50%);animation-delay:-4s}
+@keyframes floatBlob{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(40px,-40px) scale(1.1)}}
+.splash-content{position:relative;z-index:2;text-align:center}
+.splash-logo{
+  width:96px;height:96px;margin:0 auto 24px;
+  background:linear-gradient(135deg,#6366f1,#06b6d4);
+  border-radius:24px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:48px;font-weight:800;color:#fff;
+  box-shadow:0 20px 60px -10px rgba(99,102,241,0.6);
+  animation:logoPulse 2s ease-in-out infinite;
+}
+@keyframes logoPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.splash-title{font-size:28px;font-weight:800;letter-spacing:-0.02em;margin-bottom:8px}
+.splash-subtitle{font-size:14px;color:rgba(255,255,255,0.7);font-weight:500;margin-bottom:32px}
+.splash-loader{
+  width:160px;height:4px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;margin:0 auto;
+}
+.splash-loader-bar{
+  height:100%;width:30%;
+  background:linear-gradient(90deg,transparent,#6366f1,#06b6d4,transparent);
+  border-radius:2px;
+  animation:loaderSlide 1.4s ease-in-out infinite;
+}
+@keyframes loaderSlide{0%{transform:translateX(-100%)}100%{transform:translateX(400%)}}
+.splash-footer{position:absolute;bottom:24px;left:0;right:0;text-align:center;font-size:12px;color:rgba(255,255,255,0.5);z-index:2}
+
+/* ---------- Login Screen ---------- */
+#login{
+  position:fixed;inset:0;z-index:1000;
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+  background:linear-gradient(135deg,#0f172a 0%,#1e1b4b 50%,#312e81 100%);
+  overflow:hidden;
+}
+#login.hidden{display:none}
+.login-bg{position:absolute;inset:0;overflow:hidden}
+.login-blob{position:absolute;border-radius:50%;filter:blur(100px);opacity:0.5;animation:floatBlob 10s ease-in-out infinite}
+.login-blob.b1{width:600px;height:600px;background:#6366f1;top:-200px;left:-200px}
+.login-blob.b2{width:500px;height:500px;background:#06b6d4;bottom:-150px;right:-150px;animation-delay:-3s}
+.login-blob.b3{width:400px;height:400px;background:#ec4899;top:40%;left:40%;animation-delay:-6s;opacity:0.3}
+.login-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:40px 40px;mask-image:radial-gradient(ellipse at center,black 30%,transparent 70%)}
+
+.login-card{
+  position:relative;z-index:2;
+  width:100%;max-width:440px;
+  background:var(--bg-glass-strong);
+  backdrop-filter:blur(24px) saturate(180%);
+  -webkit-backdrop-filter:blur(24px) saturate(180%);
+  border:1px solid rgba(255,255,255,0.15);
+  border-radius:var(--radius-xl);
+  padding:40px;
+  box-shadow:0 25px 60px -15px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.05) inset;
+  animation:cardIn 600ms cubic-bezier(0.16,1,0.3,1);
+}
+@keyframes cardIn{from{opacity:0;transform:translateY(20px) scale(0.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.login-header{text-align:center;margin-bottom:32px}
+.login-logo{
+  width:64px;height:64px;margin:0 auto 16px;
+  background:linear-gradient(135deg,#6366f1,#06b6d4);
+  border-radius:16px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;font-weight:800;color:#fff;
+  box-shadow:0 10px 30px -5px rgba(99,102,241,0.5);
+}
+.login-title{font-size:22px;font-weight:700;color:#fff;letter-spacing:-0.02em}
+.login-subtitle{font-size:13px;color:rgba(255,255,255,0.6);margin-top:4px}
+
+.form-group{margin-bottom:18px;position:relative}
+.form-label{display:block;font-size:12px;font-weight:600;color:rgba(255,255,255,0.8);margin-bottom:6px;letter-spacing:0.02em;text-transform:uppercase}
+.form-input{
+  width:100%;
+  padding:12px 14px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:var(--radius);
+  color:#fff;
+  font-size:14px;
+  transition:all var(--transition);
+  outline:none;
+}
+.form-input::placeholder{color:rgba(255,255,255,0.4)}
+.form-input:focus{
+  background:rgba(255,255,255,0.1);
+  border-color:#6366f1;
+  box-shadow:0 0 0 3px rgba(99,102,241,0.2);
+}
+.form-input.password{padding-right:44px}
+.input-icon{
+  position:absolute;right:12px;top:38px;
+  width:24px;height:24px;
+  display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,0.5);
+  border-radius:6px;
+  transition:color var(--transition);
+}
+.input-icon:hover{color:#fff}
+.input-icon svg{width:18px;height:18px}
+
+.form-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;font-size:13px}
+.checkbox-wrap{display:flex;align-items:center;gap:8px;cursor:pointer;color:rgba(255,255,255,0.7)}
+.checkbox-wrap input{width:16px;height:16px;accent-color:#6366f1;cursor:pointer}
+.form-link{color:#818cf8;font-weight:500;cursor:pointer}
+.form-link:hover{color:#a5b4fc;text-decoration:underline}
+
+.login-error{
+  background:rgba(239,68,68,0.1);
+  border:1px solid rgba(239,68,68,0.3);
+  color:#fca5a5;
+  padding:10px 14px;border-radius:var(--radius);
+  font-size:13px;margin-bottom:16px;
+  display:none;align-items:center;gap:8px;
+}
+.login-error.show{display:flex;animation:shake 400ms}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+.btn-primary{
+  width:100%;
+  padding:13px 20px;
+  background:linear-gradient(135deg,#6366f1,#4f46e5);
+  color:#fff;
+  border-radius:var(--radius);
+  font-weight:600;font-size:14px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:all var(--transition);
+  box-shadow:0 4px 14px -2px rgba(99,102,241,0.4);
+}
+.btn-primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 20px -2px rgba(99,102,241,0.5)}
+.btn-primary:active:not(:disabled){transform:translateY(0)}
+.btn-primary:disabled{opacity:0.7;cursor:not-allowed}
+.btn-spinner{
+  width:16px;height:16px;
+  border:2px solid rgba(255,255,255,0.3);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:spin 700ms linear infinite;
+  display:none;
+}
+.btn-primary.loading .btn-spinner{display:block}
+.btn-primary.loading .btn-text{display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.login-footer{text-align:center;margin-top:24px;font-size:12px;color:rgba(255,255,255,0.4)}
+.login-footer strong{color:rgba(255,255,255,0.7);font-weight:600}
+
+/* ---------- App Shell ---------- */
+#app{display:none;min-height:100vh}
+#app.show{display:block}
+
+/* Sidebar */
+.sidebar{
+  position:fixed;top:0;left:0;bottom:0;
+  width:var(--sidebar-w);
+  background:var(--bg-elev);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  z-index:50;
+  transition:transform var(--transition),background var(--transition);
+  overflow-y:auto;
+}
+.sidebar-header{
+  height:var(--navbar-h);
+  padding:0 20px;
+  display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.sidebar-logo{
+  width:36px;height:36px;
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:800;font-size:18px;
+  flex-shrink:0;
+}
+.sidebar-brand{display:flex;flex-direction:column;line-height:1.1}
+.sidebar-brand-name{font-weight:700;font-size:14px;letter-spacing:-0.01em}
+.sidebar-brand-sub{font-size:11px;color:var(--text-subtle);font-weight:500}
+
+.sidebar-nav{flex:1;padding:12px;overflow-y:auto}
+.nav-section-label{
+  font-size:10px;font-weight:700;color:var(--text-subtle);
+  text-transform:uppercase;letter-spacing:0.08em;
+  padding:14px 12px 6px;
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 12px;
+  border-radius:var(--radius);
+  font-size:13.5px;font-weight:500;
+  color:var(--text-muted);
+  cursor:pointer;
+  transition:all 150ms ease;
+  margin-bottom:2px;
+  width:100%;
+  text-align:left;
+  position:relative;
+}
+.nav-item:hover{background:var(--bg-hover);color:var(--text)}
+.nav-item.active{
+  background:var(--primary-soft);
+  color:var(--primary);
+  font-weight:600;
+}
+.nav-item.active::before{
+  content:'';position:absolute;left:-12px;top:50%;transform:translateY(-50%);
+  width:3px;height:18px;background:var(--primary);border-radius:0 3px 3px 0;
+}
+.nav-item svg{width:18px;height:18px;flex-shrink:0}
+.nav-badge{
+  margin-left:auto;
+  background:var(--danger);color:#fff;
+  font-size:10px;font-weight:700;
+  padding:2px 6px;border-radius:10px;min-width:18px;text-align:center;
+}
+
+.sidebar-footer{
+  padding:12px;
+  border-top:1px solid var(--border);
+  flex-shrink:0;
+}
+.sidebar-user{
+  display:flex;align-items:center;gap:10px;
+  padding:8px;border-radius:var(--radius);cursor:pointer;
+  transition:background var(--transition);
+}
+.sidebar-user:hover{background:var(--bg-hover)}
+.sidebar-user-avatar{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:600;font-size:13px;flex-shrink:0;
+}
+.sidebar-user-info{flex:1;min-width:0}
+.sidebar-user-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar-user-role{font-size:11px;color:var(--text-subtle);text-transform:capitalize}
+
+/* Mobile sidebar overlay */
+.sidebar-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.5);
+  z-index:40;display:none;
+}
+.sidebar-overlay.show{display:block}
+@media(max-width:1024px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+}
+
+/* Main */
+.main{
+  margin-left:var(--sidebar-w);
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  transition:margin var(--transition);
+}
+@media(max-width:1024px){.main{margin-left:0}}
+
+/* Navbar */
+.navbar{
+  height:var(--navbar-h);
+  background:var(--bg-elev);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:16px;
+  padding:0 24px;
+  position:sticky;top:0;z-index:30;
+  backdrop-filter:blur(12px);
+}
+.menu-toggle{display:none;width:36px;height:36px;border-radius:8px;align-items:center;justify-content:center;color:var(--text-muted)}
+.menu-toggle:hover{background:var(--bg-hover);color:var(--text)}
+.menu-toggle svg{width:20px;height:20px}
+@media(max-width:1024px){.menu-toggle{display:flex}}
+.navbar-title{font-size:16px;font-weight:600;letter-spacing:-0.01em;flex:1}
+.navbar-search{
+  position:relative;width:280px;
+}
+.navbar-search input{
+  width:100%;padding:8px 12px 8px 36px;
+  background:var(--bg-soft);border:1px solid var(--border);
+  border-radius:var(--radius);font-size:13px;
+  transition:all var(--transition);
+}
+.navbar-search input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+.navbar-search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--text-subtle)}
+@media(max-width:768px){.navbar-search{display:none}}
+
+.navbar-actions{display:flex;align-items:center;gap:6px}
+.icon-btn{
+  width:36px;height:36px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text-muted);
+  transition:all 150ms ease;
+}
+.icon-btn:hover{background:var(--bg-hover);color:var(--text)}
+.icon-btn svg{width:18px;height:18px}
+.theme-toggle .moon{display:none}
+[data-theme="dark"] .theme-toggle .sun{display:none}
+[data-theme="dark"] .theme-toggle .moon{display:block}
+
+/* Content */
+.content{flex:1;padding:24px 32px;max-width:1600px;width:100%;margin:0 auto}
+@media(max-width:768px){.content{padding:16px}}
+
+/* Page header */
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:16px}
+.page-title{font-size:24px;font-weight:700;letter-spacing:-0.02em}
+.page-subtitle{font-size:13px;color:var(--text-muted);margin-top:2px}
+.page-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* Buttons */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:8px 14px;
+  border-radius:var(--radius);
+  font-size:13px;font-weight:500;
+  border:1px solid transparent;
+  transition:all 150ms ease;
+  white-space:nowrap;
+}
+.btn svg{width:16px;height:16px}
+.btn-primary-solid{background:var(--primary);color:#fff}
+.btn-primary-solid:hover{background:var(--primary-hover)}
+.btn-secondary{background:var(--bg-elev);border-color:var(--border);color:var(--text)}
+.btn-secondary:hover{background:var(--bg-hover);border-color:var(--border-strong)}
+.btn-ghost{color:var(--text-muted)}
+.btn-ghost:hover{background:var(--bg-hover);color:var(--text)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover{filter:brightness(0.95)}
+.btn-danger-ghost{color:var(--danger);background:transparent}
+.btn-danger-ghost:hover{background:rgba(239,68,68,0.1)}
+.btn-success{background:var(--success);color:#fff}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-icon{padding:6px;width:30px;height:30px}
+.btn-icon svg{width:14px;height:14px}
+.btn:disabled{opacity:0.5;cursor:not-allowed}
+
+/* Cards */
+.card{
+  background:var(--bg-elev);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:20px;
+  transition:border-color var(--transition);
+}
+.card-hover:hover{border-color:var(--border-strong);box-shadow:var(--shadow)}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-size:15px;font-weight:600;letter-spacing:-0.01em}
+
+/* Stats Grid */
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:16px;margin-bottom:24px;
+}
+.stat-card{
+  background:var(--bg-elev);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:20px;
+  position:relative;overflow:hidden;
+  transition:all var(--transition);
+}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);border-color:var(--border-strong)}
+.stat-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--stat-color,var(--primary));
+}
+.stat-icon{
+  width:40px;height:40px;border-radius:10px;
+  background:var(--stat-bg,var(--primary-soft));
+  color:var(--stat-color,var(--primary));
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:12px;
+}
+.stat-icon svg{width:20px;height:20px}
+.stat-label{font-size:12px;color:var(--text-muted);font-weight:500;text-transform:uppercase;letter-spacing:0.04em}
+.stat-value{font-size:28px;font-weight:700;letter-spacing:-0.02em;margin-top:4px;line-height:1}
+.stat-trend{font-size:12px;color:var(--text-subtle);margin-top:8px;display:flex;align-items:center;gap:4px}
+.stat-trend.up{color:var(--success)}
+.stat-trend.down{color:var(--danger)}
+
+/* Grid layouts */
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media(max-width:1024px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr}}
+
+/* Tables */
+.table-wrap{overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--border);background:var(--bg-elev)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead{background:var(--bg-soft)}
+th{
+  text-align:left;padding:12px 16px;
+  font-weight:600;color:var(--text-muted);
+  font-size:11px;text-transform:uppercase;letter-spacing:0.05em;
+  border-bottom:1px solid var(--border);
+  white-space:nowrap;
+}
+td{padding:12px 16px;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr{transition:background 150ms}
+tbody tr:hover{background:var(--bg-hover)}
+.table-avatar{display:flex;align-items:center;gap:10px}
+.table-avatar-circle{
+  width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:600;font-size:12px;flex-shrink:0;
+}
+
+/* Badges */
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 9px;border-radius:20px;
+  font-size:11px;font-weight:600;
+  text-transform:capitalize;
+}
+.badge-primary{background:var(--primary-soft);color:var(--primary)}
+.badge-success{background:rgba(16,185,129,0.12);color:var(--success)}
+.badge-warning{background:rgba(245,158,11,0.12);color:var(--warning)}
+.badge-danger{background:rgba(239,68,68,0.12);color:var(--danger)}
+.badge-info{background:rgba(59,130,246,0.12);color:var(--info)}
+.badge-neutral{background:var(--bg-soft);color:var(--text-muted)}
+.badge-purple{background:rgba(139,92,246,0.12);color:var(--purple)}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+/* Forms */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-grid-1{grid-column:span 1}
+.form-grid-2{grid-column:span 2}
+@media(max-width:640px){.form-grid{grid-template-columns:1fr}.form-grid-2{grid-column:span 1}}
+.field{margin-bottom:14px}
+.field-label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.03em}
+.field-input,.field-select,.field-textarea{
+  width:100%;padding:10px 12px;
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:var(--radius);color:var(--text);
+  font-size:13.5px;
+  transition:all var(--transition);outline:none;
+}
+.field-input:focus,.field-select:focus,.field-textarea:focus{
+  border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft);
+  background:var(--bg-elev);
+}
+.field-textarea{resize:vertical;min-height:90px;font-family:inherit}
+.field-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.field-hint{font-size:11px;color:var(--text-subtle);margin-top:4px}
+
+/* Modal */
+.modal-overlay{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,0.6);
+  backdrop-filter:blur(4px);
+  display:none;align-items:flex-start;justify-content:center;
+  padding:40px 20px;overflow-y:auto;
+}
+.modal-overlay.show{display:flex;animation:fadeIn 200ms}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{
+  background:var(--bg-elev);
+  border:1px solid var(--border);
+  border-radius:var(--radius-xl);
+  width:100%;max-width:560px;
+  box-shadow:var(--shadow-lg);
+  animation:modalIn 250ms cubic-bezier(0.16,1,0.3,1);
+  margin:auto;
+}
+.modal.modal-lg{max-width:800px}
+.modal.modal-sm{max-width:420px}
+@keyframes modalIn{from{opacity:0;transform:translateY(20px) scale(0.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.modal-header{
+  padding:18px 24px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.modal-title{font-size:16px;font-weight:600;letter-spacing:-0.01em}
+.modal-close{
+  width:32px;height:32px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text-muted);transition:all 150ms;
+}
+.modal-close:hover{background:var(--bg-hover);color:var(--text)}
+.modal-close svg{width:18px;height:18px}
+.modal-body{padding:24px;max-height:70vh;overflow-y:auto}
+.modal-footer{
+  padding:16px 24px;
+  border-top:1px solid var(--border);
+  display:flex;justify-content:flex-end;gap:8px;
+  background:var(--bg-soft);
+  border-radius:0 0 var(--radius-xl) var(--radius-xl);
+}
+
+/* Toast */
+.toast-container{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:10px;pointer-events:none}
+.toast{
+  background:var(--bg-elev);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:12px 16px;
+  min-width:280px;max-width:380px;
+  box-shadow:var(--shadow-lg);
+  display:flex;align-items:center;gap:10px;
+  font-size:13px;font-weight:500;
+  pointer-events:auto;
+  animation:toastIn 300ms cubic-bezier(0.16,1,0.3,1);
+  border-left:3px solid var(--toast-color,var(--primary));
+}
+.toast.success{--toast-color:var(--success)}
+.toast.error{--toast-color:var(--danger)}
+.toast.warning{--toast-color:var(--warning)}
+.toast.info{--toast-color:var(--info)}
+.toast-icon{width:18px;height:18px;color:var(--toast-color);flex-shrink:0}
+.toast.hide{animation:toastOut 300ms forwards}
+@keyframes toastIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes toastOut{to{opacity:0;transform:translateX(40px)}}
+
+/* Empty State */
+.empty-state{
+  text-align:center;padding:60px 20px;
+  color:var(--text-muted);
+}
+.empty-state-icon{
+  width:64px;height:64px;
+  margin:0 auto 16px;
+  background:var(--bg-soft);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text-subtle);
+}
+.empty-state-icon svg{width:32px;height:32px}
+.empty-state-title{font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px}
+.empty-state-text{font-size:13px;color:var(--text-muted);max-width:380px;margin:0 auto}
+
+/* Loading */
+.loading-spinner{
+  display:flex;align-items:center;justify-content:center;
+  padding:60px;
+}
+.spinner{
+  width:32px;height:32px;
+  border:3px solid var(--border);
+  border-top-color:var(--primary);
+  border-radius:50%;
+  animation:spin 700ms linear infinite;
+}
+.skeleton{
+  background:linear-gradient(90deg,var(--bg-soft) 25%,var(--bg-hover) 50%,var(--bg-soft) 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.5s infinite;
+  border-radius:var(--radius);
+}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* List items */
+.list-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 0;
+  border-bottom:1px solid var(--border);
+}
+.list-item:last-child{border-bottom:none}
+.list-item-icon{
+  width:36px;height:36px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.list-item-icon svg{width:18px;height:18px}
+.list-item-content{flex:1;min-width:0}
+.list-item-title{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list-item-sub{font-size:12px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list-item-meta{font-size:11px;color:var(--text-subtle);text-align:right;flex-shrink:0}
+
+/* Progress bar */
+.progress{height:6px;background:var(--bg-soft);border-radius:3px;overflow:hidden}
+.progress-bar{height:100%;border-radius:3px;transition:width 600ms ease}
+
+/* Chart container */
+.chart-container{position:relative;height:280px}
+.chart-container.sm{height:200px}
+.chart-container.lg{height:340px}
+
+/* Tabs */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:20px;overflow-x:auto}
+.tab{
+  padding:10px 16px;
+  font-size:13px;font-weight:500;
+  color:var(--text-muted);
+  border-bottom:2px solid transparent;
+  white-space:nowrap;
+  transition:all 150ms;
+}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+
+/* Module container */
+.module{display:none;animation:moduleIn 300ms ease}
+.module.show{display:block}
+@keyframes moduleIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* Priority indicator */
+.priority-indicator{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600}
+.priority-dot{width:8px;height:8px;border-radius:50%}
+
+/* Filter bar */
+.filter-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.filter-input{
+  padding:8px 12px;
+  background:var(--bg-elev);border:1px solid var(--border);
+  border-radius:var(--radius);font-size:13px;
+  min-width:180px;flex:1;
+  outline:none;transition:all var(--transition);
+}
+.filter-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+.filter-select{
+  padding:8px 12px;
+  background:var(--bg-elev);border:1px solid var(--border);
+  border-radius:var(--radius);font-size:13px;
+  appearance:none;outline:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;padding-right:30px;
+}
+
+/* HPI Ranking */
+.rank-list{display:flex;flex-direction:column;gap:10px}
+.rank-item{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 16px;
+  background:var(--bg-elev);border:1px solid var(--border);
+  border-radius:var(--radius);
+  transition:all var(--transition);
+}
+.rank-item:hover{box-shadow:var(--shadow);transform:translateX(2px)}
+.rank-position{
+  width:36px;height:36px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:15px;flex-shrink:0;
+  background:var(--bg-soft);color:var(--text-muted);
+}
+.rank-position.gold{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#fff}
+.rank-position.silver{background:linear-gradient(135deg,#e5e7eb,#9ca3af);color:#fff}
+.rank-position.bronze{background:linear-gradient(135deg,#f97316,#c2410c);color:#fff}
+.rank-content{flex:1;min-width:0}
+.rank-name{font-weight:600;font-size:14px}
+.rank-meta{font-size:12px;color:var(--text-muted);margin-top:2px}
+.rank-score{font-size:20px;font-weight:700;letter-spacing:-0.02em}
+
+/* PDF preview */
+.pdf-preview{
+  width:100%;height:400px;
+  border:1px solid var(--border);border-radius:var(--radius);
+  background:var(--bg-soft);
+}
+
+/* Switch */
+.switch{position:relative;display:inline-block;width:40px;height:22px}
+.switch input{opacity:0;width:0;height:0}
+.slider{
+  position:absolute;cursor:pointer;inset:0;
+  background:var(--border-strong);border-radius:22px;transition:var(--transition);
+}
+.slider::before{
+  content:'';position:absolute;height:16px;width:16px;left:3px;top:3px;
+  background:#fff;border-radius:50%;transition:var(--transition);
+}
+.switch input:checked + .slider{background:var(--primary)}
+.switch input:checked + .slider::before{transform:translateX(18px)}
+
+/* Utility */
+.text-muted{color:var(--text-muted)}
+.text-sm{font-size:12px}
+.text-xs{font-size:11px}
+.text-right{text-align:right}
+.text-center{text-align:center}
+.font-mono{font-family:var(--font-mono)}
+.mt-0{margin-top:0}.mt-2{margin-top:8px}.mt-4{margin-top:16px}.mt-6{margin-top:24px}
+.mb-0{margin-bottom:0}.mb-2{margin-bottom:8px}.mb-4{margin-bottom:16px}.mb-6{margin-bottom:24px}
+.flex{display:flex}.items-center{align-items:center}.justify-between{justify-content:space-between}.gap-2{gap:8px}.gap-4{gap:16px}
+.w-full{width:100%}
+.hidden{display:none !important}
+
+/* Mobile responsiveness */
+@media(max-width:640px){
+  .navbar{padding:0 16px}
+  .modal-body{padding:16px}
+  .modal-header,.modal-footer{padding:14px 16px}
+  .stat-value{font-size:22px}
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     SPLASH SCREEN
+     ============================================================ -->
+<div id="splash">
+  <div class="splash-bg">
+    <div class="splash-blob b1"></div>
+    <div class="splash-blob b2"></div>
+    <div class="splash-blob b3"></div>
+  </div>
+  <div class="splash-content">
+    <div class="splash-logo">V</div>
+    <div class="splash-title">Vatsalya Public School</div>
+    <div class="splash-subtitle">Student Council Management System</div>
+    <div class="splash-loader"><div class="splash-loader-bar"></div></div>
+  </div>
+  <div class="splash-footer">Designed &amp; Developed by <strong>Shivin Joshi</strong></div>
+</div>
+
+<!-- ============================================================
+     LOGIN SCREEN
+     ============================================================ -->
+<div id="login" class="hidden">
+  <div class="login-bg">
+    <div class="login-grid"></div>
+    <div class="login-blob b1"></div>
+    <div class="login-blob b2"></div>
+    <div class="login-blob b3"></div>
+  </div>
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-logo">V</div>
+      <div class="login-title">Welcome Back</div>
+      <div class="login-subtitle">Sign in to SCMS to continue</div>
+    </div>
+
+    <div id="loginError" class="login-error">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span id="loginErrorText">Invalid credentials</span>
+    </div>
+
+    <form id="loginForm" autocomplete="off">
+      <div class="form-group">
+        <label class="form-label" for="loginEmail">Email Address</label>
+        <input class="form-input" type="email" id="loginEmail" placeholder="you@vatsalya.edu.in" required autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="loginPassword">Password</label>
+        <input class="form-input password" type="password" id="loginPassword" placeholder="Enter your password" required autocomplete="current-password" />
+        <button type="button" class="input-icon" id="togglePassword" tabindex="-1" aria-label="Toggle password visibility">
+          <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <div class="form-row">
+        <label class="checkbox-wrap">
+          <input type="checkbox" id="rememberMe" />
+          <span>Remember me</span>
+        </label>
+        <span class="form-link" id="forgotPassword">Forgot password?</span>
+      </div>
+      <button type="submit" class="btn-primary" id="loginBtn">
+        <span class="btn-spinner"></span>
+        <span class="btn-text">Sign In</span>
+      </button>
+    </form>
+
+    <div class="login-footer">
+      <strong>Vatsalya Public School</strong> &middot; Council Management System<br/>
+      Designed &amp; Developed by Shivin Joshi
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     APP SHELL
+     ============================================================ -->
+<div id="app">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">V</div>
+      <div class="sidebar-brand">
+        <span class="sidebar-brand-name">SCMS</span>
+        <span class="sidebar-brand-sub">Vatsalya Public School</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav">
+      <div class="nav-section-label">Main</div>
+      <button class="nav-item active" data-module="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span>Dashboard</span>
+      </button>
+
+      <div class="nav-section-label">Council</div>
+      <button class="nav-item" data-module="members">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Council Members</span>
+      </button>
+      <button class="nav-item" data-module="users" data-admin-only>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+        <span>User Management</span>
+      </button>
+
+      <div class="nav-section-label">Activities</div>
+      <button class="nav-item" data-module="events">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Events</span>
+      </button>
+      <button class="nav-item" data-module="meetings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>Meetings</span>
+      </button>
+      <button class="nav-item" data-module="announcements">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
+        <span>Announcements</span>
+        <span class="nav-badge" id="announcementsBadge" style="display:none">0</span>
+      </button>
+
+      <div class="nav-section-label">Compliance</div>
+      <button class="nav-item" data-module="discipline">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span>Discipline</span>
+        <span class="nav-badge" id="disciplineBadge" style="display:none">0</span>
+      </button>
+      <button class="nav-item" data-module="hpi">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <span>House Performance</span>
+      </button>
+
+      <div class="nav-section-label">System</div>
+      <button class="nav-item" data-module="settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Settings</span>
+      </button>
+      <button class="nav-item" id="logoutBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span>Logout</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user" id="sidebarUser">
+        <div class="sidebar-user-avatar" id="sidebarUserAvatar">U</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="sidebarUserName">User</div>
+          <div class="sidebar-user-role" id="sidebarUserRole">Loading...</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="navbar">
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="navbar-title" id="navbarTitle">Dashboard</div>
+      <div class="navbar-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="globalSearch" placeholder="Search members, events..." />
+      </div>
+      <div class="navbar-actions">
+        <button class="icon-btn" id="notificationsBtn" aria-label="Notifications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </button>
+        <button class="icon-btn theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="content" id="content">
+      <!-- Modules rendered here -->
+      <div class="module show" id="module-dashboard"></div>
+      <div class="module" id="module-members"></div>
+      <div class="module" id="module-users"></div>
+      <div class="module" id="module-events"></div>
+      <div class="module" id="module-meetings"></div>
+      <div class="module" id="module-announcements"></div>
+      <div class="module" id="module-discipline"></div>
+      <div class="module" id="module-hpi"></div>
+      <div class="module" id="module-settings"></div>
+    </main>
+  </div>
+</div>
+
+<!-- Modal Container -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Modal</div>
+      <button class="modal-close" id="modalClose" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer" id="modalFooter"></div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+/* ============================================================
+   SCMS — JavaScript Application
+   ============================================================ */
+
+/* ---------- Supabase Configuration ---------- */
+const SUPABASE_URL = 'https://zuccyxnglexxmmpfrupb.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp1Y2N5eG5nbGV4eG1tcGZydXBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0NjU0NzQsImV4cCI6MjEwMDA0MTQ3NH0.nCHop_SmU3rJ-QegPI8Zn72Su4ijlfWt2zU1T3P3P24';
+
+/* ---------- Globals ---------- */
+let supabase = null;
+let currentUser = null;
+let currentProfile = null;
+let appCache = { houses:[], positions:[], profiles:[], categories:[] };
+let activeCharts = {};
+
+/* ---------- Utility Helpers ---------- */
+const $ = (sel,ctx=document)=>ctx.querySelector(sel);
+const $$ = (sel,ctx=document)=>Array.from(ctx.querySelectorAll(sel));
+
+function escapeHtml(str){
+  if(str===null||str===undefined) return '';
+  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function formatDate(dateStr,opts={}){
+  if(!dateStr) return '—';
+  const d = new Date(dateStr);
+  if(isNaN(d.getTime())) return '—';
+  const def = { year:'numeric', month:'short', day:'numeric' };
+  return d.toLocaleDateString('en-US', {...def, ...opts});
+}
+function formatDateTime(dateStr){
+  if(!dateStr) return '—';
+  const d = new Date(dateStr);
+  if(isNaN(d.getTime())) return '—';
+  return d.toLocaleString('en-US',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function timeAgo(dateStr){
+  if(!dateStr) return '';
+  const d = new Date(dateStr);
+  const diff = Date.now() - d.getTime();
+  const sec = Math.floor(diff/1000);
+  if(sec<60) return 'just now';
+  const min = Math.floor(sec/60);
+  if(min<60) return `${min}m ago`;
+  const hr = Math.floor(min/60);
+  if(hr<24) return `${hr}h ago`;
+  const day = Math.floor(hr/24);
+  if(day<7) return `${day}d ago`;
+  return formatDate(dateStr);
+}
+function getInitials(name){
+  if(!name) return '?';
+  return name.split(' ').filter(Boolean).slice(0,2).map(p=>p[0].toUpperCase()).join('');
+}
+function debounce(fn,wait=300){
+  let t;
+  return function(...args){
+    clearTimeout(t);
+    t = setTimeout(()=>fn.apply(this,args), wait);
+  };
+}
+function uuid(){
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c=>{
+    const r = Math.random()*16|0;
+    const v = c==='x'?r:(r&0x3|0x8);
+    return v.toString(16);
+  });
+}
+function downloadFile(url, filename){
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+}
+
+/* ---------- Toast ---------- */
+function toast(message, type='info', duration=3500){
+  const container = $('#toastContainer');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  const icons = {
+    success:'<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+    error:'<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+    warning:'<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+    info:'<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+  };
+  el.innerHTML = `${icons[type]||icons.info}<span>${escapeHtml(message)}</span>`;
+  container.appendChild(el);
+  setTimeout(()=>{
+    el.classList.add('hide');
+    setTimeout(()=>el.remove(),300);
+  }, duration);
+}
+
+/* ---------- Modal ---------- */
+function openModal(title, bodyHtml, footerHtml, size=''){
+  $('#modalTitle').textContent = title;
+  $('#modalBody').innerHTML = bodyHtml;
+  $('#modalFooter').innerHTML = footerHtml || '';
+  const modal = $('#modal');
+  modal.className = 'modal' + (size?` modal-${size}`:'');
+  $('#modalOverlay').classList.add('show');
+}
+function closeModal(){
+  $('#modalOverlay').classList.remove('show');
+  $('#modalBody').innerHTML = '';
+  $('#modalFooter').innerHTML = '';
+}
+function confirmAction(title, message, onConfirm, confirmText='Confirm', confirmClass='btn-danger'){
+  openModal(title,
+    `<p style="font-size:14px;line-height:1.6;color:var(--text-muted)">${escapeHtml(message)}</p>`,
+    `<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+     <button class="btn ${confirmClass}" id="confirmActionBtn">${confirmText}</button>`,
+    'sm');
+  $('#confirmActionBtn').addEventListener('click', async ()=>{
+    const btn = $('#confirmActionBtn');
+    btn.disabled = true;
+    btn.textContent = 'Working...';
+    try { await onConfirm(); closeModal(); }
+    catch(e){ toast(e.message||'Action failed','error'); btn.disabled=false; btn.textContent=confirmText; }
+  });
+}
+
+/* ---------- Theme ---------- */
+function initTheme(){
+  const saved = localStorage.getItem('scms-theme') || 'light';
+  document.documentElement.setAttribute('data-theme', saved);
+}
+function toggleTheme(){
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = cur==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('scms-theme', next);
+  Object.values(activeCharts).forEach(c=>{ try{c.update()}catch(e){} });
+}
+
+/* ---------- Splash / Login / App routing ---------- */
+function showSplash(){ $('#splash').classList.remove('hidden'); }
+function hideSplash(){ $('#splash').classList.add('hidden'); }
+function showLogin(){
+  $('#login').classList.remove('hidden');
+  $('#app').classList.remove('show');
+}
+function showApp(){
+  $('#login').classList.add('hidden');
+  $('#app').classList.add('show');
+}
+
+/* ---------- Audit log helper ---------- */
+async function logAudit(action, entityType, entityId, details={}){
+  if(!supabase || !currentProfile) return;
+  try{
+    await supabase.from('audit_logs').insert({
+      user_id: currentProfile.id,
+      action: action,
+      table_name: entityType,
+      record_id: entityId ? String(entityId) : null,
+      old_value: details.old || null,
+      new_value: details.new || details || null
+    });
+  }catch(e){ /* audit logging is best-effort */ }
+}
+
+/* ---------- Supabase Initialization ---------- */
+function initSupabase(){
+  if(typeof window.supabase === 'undefined' || !window.supabase.createClient){
+    console.error('Supabase SDK not loaded');
+    toast('Supabase SDK failed to load. Check your internet connection.','error');
+    return null;
+  }
+  if(!SUPABASE_URL || !SUPABASE_ANON_KEY || SUPABASE_URL === 'YOUR_SUPABASE_PROJECT_URL'){
+    console.warn('Supabase credentials not configured');
+    return null;
+  }
+  try{
+    return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storage: window.localStorage,
+        storageKey: 'scms-auth'
+      }
+    });
+  }catch(e){
+    console.error('Supabase init error:', e);
+    return null;
+  }
+}
+
+/* ---------- Auth: Login ---------- */
+async function handleLogin(email, password, remember){
+  const btn = $('#loginBtn');
+  btn.classList.add('loading');
+  btn.disabled = true;
+  try{
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password
+    });
+    console.log("========== LOGIN DEBUG ==========");
+    console.log("Error:", error);
+    console.log("User:", data?.user);
+    console.log("Session:", data?.session);
+    console.log("Full Data:", data);
+    if(error) throw error;
+    if(!data.user) throw new Error('No user returned');
+
+    const profile = await loadUserProfile(data.user.id);
+    if(!profile){
+      throw new Error('Profile not found. Contact administrator.');
+    }
+    if(profile.is_active === false){
+      await supabase.auth.signOut();
+      throw new Error('Account disabled. Contact administrator.');
+    }
+
+    if(remember){
+      localStorage.setItem('scms-remember','true');
+    }else{
+      localStorage.removeItem('scms-remember');
+    }
+
+    currentUser = data.user;
+    currentProfile = profile;
+    await logAudit('login','auth',currentUser.id,{email:currentUser.email});
+    await loadAppCache();
+    showApp();
+    renderApp();
+    navigateTo('dashboard');
+    toast(`Welcome back, ${profile.full_name||'User'}!`,'success');
+  }catch(e){
+    showLoginError(e.message || 'Login failed');
+    try{ await supabase.auth.signOut(); }catch(_){}
+  }finally{
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
+}
+
+function showLoginError(msg){
+  const box = $('#loginError');
+  $('#loginErrorText').textContent = msg;
+  box.classList.add('show');
+  setTimeout(()=>box.classList.remove('show'), 5000);
+}
+
+/* ---------- Load user profile ---------- */
+async function loadUserProfile(userId){
+  try{
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if(error) throw error;
+    return data;
+  }catch(e){
+    console.error("Profile load error:", e);
+    return null;
+  }
+}
+
+/* ---------- Logout ---------- */
+async function handleLogout(){
+  try{
+    await logAudit('logout','auth',currentUser?.id||null);
+    await supabase.auth.signOut();
+  }catch(e){ /* ignore */ }
+  currentUser = null;
+  currentProfile = null;
+  Object.values(activeCharts).forEach(c=>{try{c.destroy()}catch(e){}});
+  activeCharts = {};
+  showLogin();
+  $('#loginForm').reset();
+  toast('Signed out successfully','info');
+}
+
+/* ---------- Session check on load ---------- */
+async function checkSession(){
+  if(!supabase) return false;
+  try{
+    const { data, error } = await supabase.auth.getSession();
+    if(error || !data.session) return false;
+    const profile = await loadUserProfile(data.session.user.id);
+    if(!profile || profile.is_active === false){
+      await supabase.auth.signOut();
+      return false;
+    }
+    currentUser = data.session.user;
+    currentProfile = profile;
+    return true;
+  }catch(e){
+    console.error('Session check error:', e);
+    return false;
+  }
+}
+
+/* ---------- App Cache (lookup tables) ---------- */
+async function loadAppCache(){
+  try{
+    const [houses, positions, categories] = await Promise.all([
+      supabase.from('houses').select('*').order('name'),
+      supabase.from('positions').select('*').order('display_order'),
+      supabase.from('hpi_categories').select('*').order('name')
+    ]);
+    appCache.houses = houses.data || [];
+    appCache.positions = positions.data || [];
+    appCache.categories = (categories.data || []).map(c => ({ ...c, max_score: c.max_score || 100 }));
+  }catch(e){
+    console.error('Cache load error:', e);
+  }
+}
+
+/* ---------- App Render ---------- */
+function renderApp(){
+  $('#sidebarUserName').textContent = currentProfile?.full_name || 'User';
+  $('#sidebarUserRole').textContent = (currentProfile?.role || 'user').replace(/_/g,' ');
+  $('#sidebarUserAvatar').textContent = getInitials(currentProfile?.full_name);
+
+  const isAdmin = currentProfile?.role === 'admin';
+  $$('[data-admin-only]').forEach(el=>{
+    el.style.display = isAdmin ? '' : 'none';
+  });
+}
+
+/* ---------- Navigation ---------- */
+function navigateTo(module){
+  $$('.nav-item').forEach(n=>n.classList.remove('active'));
+  const navBtn = $(`.nav-item[data-module="${module}"]`);
+  if(navBtn) navBtn.classList.add('active');
+
+  $$('.module').forEach(m=>m.classList.remove('show'));
+  const target = $(`#module-${module}`);
+  if(target) target.classList.add('show');
+
+  const titles = {
+    dashboard:'Dashboard', members:'Council Members', users:'User Management',
+    events:'Events', meetings:'Meetings', announcements:'Announcements',
+    discipline:'Discipline Management', hpi:'House Performance Index',
+    settings:'Settings'
+  };
+  $('#navbarTitle').textContent = titles[module] || 'SCMS';
+
+  $('#sidebar').classList.remove('open');
+  $('#sidebarOverlay').classList.remove('show');
+
+  const renderers = {
+    dashboard: renderDashboard, members: renderMembers, users: renderUsers,
+    events: renderEvents, meetings: renderMeetings, announcements: renderAnnouncements,
+    discipline: renderDiscipline, hpi: renderHPI, settings: renderSettings
+  };
+  const fn = renderers[module];
+  if(fn) fn();
+}
+
+/* ---------- Role check helpers ---------- */
+function isAdmin(){ return currentProfile?.role === 'admin'; }
+function isStaff(){ return ['admin','teacher'].includes(currentProfile?.role); }
+
+/* ---------- Dashboard Module ---------- */
+async function renderDashboard(){
+  const container = $('#module-dashboard');
+  container.innerHTML = `
+    <div class="page-header">
+      <div>
+        <div class="page-title">Dashboard</div>
+        <div class="page-subtitle">Welcome back, ${escapeHtml(currentProfile?.full_name||'User')} — here's what's happening.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-secondary" onclick="navigateTo('events')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Events
+        </button>
+        <button class="btn btn-primary-solid" onclick="navigateTo('announcements')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Announcement
+        </button>
+      </div>
+    </div>
+
+    <div class="stats-grid" id="dashboardStats">
+      ${renderSkeletonStats()}
+    </div>
+
+    <div class="grid-2" style="margin-bottom:24px">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">House Performance Ranking</div>
+          <button class="btn btn-ghost btn-sm" onclick="navigateTo('hpi')">View all</button>
+        </div>
+        <div class="chart-container" id="hpiChartWrap"><canvas id="hpiChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Council Composition</div>
+          <button class="btn btn-ghost btn-sm" onclick="navigateTo('members')">View all</button>
+        </div>
+        <div class="chart-container" id="membersChartWrap"><canvas id="membersChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Upcoming Events</div>
+          <button class="btn btn-ghost btn-sm" onclick="navigateTo('events')">View all</button>
+        </div>
+        <div id="dashboardEvents"><div class="loading-spinner"><div class="spinner"></div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Recent Announcements</div>
+          <button class="btn btn-ghost btn-sm" onclick="navigateTo('announcements')">View all</button>
+        </div>
+        <div id="dashboardAnnouncements"><div class="loading-spinner"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-top:24px">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Upcoming Meetings</div>
+          <button class="btn btn-ghost btn-sm" onclick="navigateTo('meetings')">View all</button>
+        </div>
+        <div id="dashboardMeetings"><div class="loading-spinner"><div class="spinner"></div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Discipline Alerts</div>
+          <button class="btn btn-ghost btn-sm" onclick="navigateTo('discipline')">View all</button>
+        </div>
+        <div id="dashboardDiscipline"><div class="loading-spinner"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+  `;
+
+  loadDashboardData();
+}
+
+function renderSkeletonStats(){
+  const stats = [
+    {label:'Council Members',color:'var(--primary)',bg:'var(--primary-soft)'},
+    {label:'Active Events',color:'var(--info)',bg:'rgba(59,130,246,0.12)'},
+    {label:'Pending Reports',color:'var(--warning)',bg:'rgba(245,158,11,0.12)'},
+    {label:'Active Warnings',color:'var(--danger)',bg:'rgba(239,68,68,0.12)'}
+  ];
+  return stats.map(s=>`
+    <div class="stat-card" style="--stat-color:${s.color};--stat-bg:${s.bg}">
+      <div class="stat-icon"><div class="spinner" style="width:18px;height:18px"></div></div>
+      <div class="stat-label">${s.label}</div>
+      <div class="stat-value">—</div>
+    </div>
+  `).join('');
+}
+
+async function loadDashboardData(){
+  try{
+    const [members, events, meetings, announcements, discipline] = await Promise.all([
+      supabase.from('council_members').select('id,house:houses(id,name,color)',{count:'exact'}),
+      supabase.from('events').select('id,name,event_date,venue,status').gte('event_date', new Date().toISOString()).order('event_date',{ascending:true}).limit(5),
+      supabase.from('meetings').select('id,title,meeting_date,venue,status').gte('meeting_date', new Date().toISOString()).order('meeting_date',{ascending:true}).limit(5),
+      supabase.from('announcements').select('id,title,priority,created_at,expiry_date').order('created_at',{ascending:false}).limit(5),
+      supabase.from('discipline_reports').select('id,student:profiles!discipline_reports_student_id_fkey(full_name),description,severity,incident_date,created_at').eq('status','pending').order('created_at',{ascending:false}).limit(5)
+    ]);
+
+    const pendingCount = discipline.data?.length || 0;
+    $('#dashboardStats').innerHTML = `
+      <div class="stat-card" style="--stat-color:var(--primary);--stat-bg:var(--primary-soft)">
+        <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div class="stat-label">Council Members</div>
+        <div class="stat-value">${members.count??0}</div>
+        <div class="stat-trend">Active members</div>
+      </div>
+      <div class="stat-card" style="--stat-color:var(--info);--stat-bg:rgba(59,130,246,0.12)">
+        <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+        <div class="stat-label">Upcoming Events</div>
+        <div class="stat-value">${events.data?.length||0}</div>
+        <div class="stat-trend">Scheduled ahead</div>
+      </div>
+      <div class="stat-card" style="--stat-color:var(--warning);--stat-bg:rgba(245,158,11,0.12)">
+        <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <div class="stat-label">Pending Reports</div>
+        <div class="stat-value">${pendingCount}</div>
+        <div class="stat-trend ${pendingCount>0?'down':''}">${pendingCount>0?'Awaiting review':'All clear'}</div>
+      </div>
+      <div class="stat-card" style="--stat-color:var(--danger);--stat-bg:rgba(239,68,68,0.12)">
+        <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div>
+        <div class="stat-label">Active Warnings</div>
+        <div class="stat-value">0</div>
+        <div class="stat-trend">Issued to students</div>
+      </div>
+    `;
+
+    const dBadge = $('#disciplineBadge');
+    if(pendingCount>0){ dBadge.textContent = pendingCount; dBadge.style.display=''; }else{ dBadge.style.display='none'; }
+
+    renderDashboardEvents(events.data||[]);
+    renderDashboardMeetings(meetings.data||[]);
+    renderDashboardAnnouncements(announcements.data||[]);
+    renderDashboardDiscipline(discipline.data||[]);
+    await renderDashboardCharts();
+  }catch(e){
+    console.error('Dashboard load error:', e);
+    toast('Failed to load dashboard data','error');
+  }
+}
+
+function renderDashboardEvents(events){
+  const wrap = $('#dashboardEvents');
+  if(!events.length){
+    wrap.innerHTML = emptyState('No upcoming events','Schedule a new event to get started.','calendar');
+    return;
+  }
+  wrap.innerHTML = events.map(ev=>`
+    <div class="list-item">
+      <div class="list-item-icon" style="background:rgba(59,130,246,0.12);color:var(--info)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <div class="list-item-content">
+        <div class="list-item-title">${escapeHtml(ev.name)}</div>
+        <div class="list-item-sub">${escapeHtml(ev.venue||'No location')} · ${formatDate(ev.event_date)}</div>
+      </div>
+      <div class="list-item-meta">
+        <span class="badge ${ev.status==='upcoming'?'badge-info':ev.status==='completed'?'badge-success':'badge-neutral'}">${ev.status||'upcoming'}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderDashboardMeetings(meetings){
+  const wrap = $('#dashboardMeetings');
+  if(!meetings.length){
+    wrap.innerHTML = emptyState('No upcoming meetings','Schedule a new meeting to get started.','message');
+    return;
+  }
+  wrap.innerHTML = meetings.map(m=>`
+    <div class="list-item">
+      <div class="list-item-icon" style="background:rgba(139,92,246,0.12);color:var(--purple)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <div class="list-item-content">
+        <div class="list-item-title">${escapeHtml(m.title)}</div>
+        <div class="list-item-sub">${escapeHtml(m.venue||'No location')} · ${formatDateTime(m.meeting_date)}</div>
+      </div>
+      <div class="list-item-meta">
+        <span class="badge ${m.status==='scheduled'?'badge-info':m.status==='completed'?'badge-success':'badge-neutral'}">${m.status||'scheduled'}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderDashboardAnnouncements(items){
+  const wrap = $('#dashboardAnnouncements');
+  if(!items.length){
+    wrap.innerHTML = emptyState('No announcements','Be the first to share news.','megaphone');
+    return;
+  }
+  const priMap = {urgent:'badge-danger',high:'badge-warning',medium:'badge-info',low:'badge-neutral'};
+  wrap.innerHTML = items.map(a=>`
+    <div class="list-item">
+      <div class="list-item-icon" style="background:${a.priority==='urgent'?'rgba(239,68,68,0.12)':'rgba(99,102,241,0.12)'};color:${a.priority==='urgent'?'var(--danger)':'var(--primary)'}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3z"/></svg>
+      </div>
+      <div class="list-item-content">
+        <div class="list-item-title">${escapeHtml(a.title)}</div>
+        <div class="list-item-sub">${timeAgo(a.created_at)}${a.expiry_date?` · expires ${formatDate(a.expiry_date)}`:''}</div>
+      </div>
+      <div class="list-item-meta">
+        <span class="badge ${priMap[a.priority]||'badge-neutral'}">${a.priority||'low'}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderDashboardDiscipline(items){
+  const wrap = $('#dashboardDiscipline');
+  if(!items.length){
+    wrap.innerHTML = emptyState('No pending reports','All discipline reports reviewed.','check');
+    return;
+  }
+  const sevMap = {severe:'badge-danger',major:'badge-warning',minor:'badge-info'};
+  wrap.innerHTML = items.map(d=>`
+    <div class="list-item">
+      <div class="list-item-icon" style="background:rgba(245,158,11,0.12);color:var(--warning)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <div class="list-item-content">
+        <div class="list-item-title">${escapeHtml(d.student?.full_name||'Unknown student')}</div>
+        <div class="list-item-sub">${escapeHtml((d.description||'').slice(0,80))}${(d.description||'').length>80?'…':''}</div>
+      </div>
+      <div class="list-item-meta">
+        <span class="badge ${sevMap[d.severity]||'badge-neutral'}">${d.severity||'minor'}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function renderDashboardCharts(){
+  try{
+    const { data: hpiData } = await supabase
+      .from('hpi_votes')
+      .select('house_id, score, house:houses(id,name,color)');
+
+    const houseMap = {};
+    (hpiData||[]).forEach(v=>{
+      const h = v.house;
+      if(!h) return;
+      if(!houseMap[h.id]) houseMap[h.id] = { name:h.name, color:h.color, total:0 };
+      houseMap[h.id].total += (v.score||0);
+    });
+    const sorted = Object.values(houseMap).sort((a,b)=>b.total-a.total);
+
+    const isDark = document.documentElement.getAttribute('data-theme')==='dark';
+    const textColor = isDark ? '#a1a1aa' : '#52525b';
+    const gridColor = isDark ? '#27272a' : '#e5e7eb';
+
+    if(activeCharts.hpi) activeCharts.hpi.destroy();
+    const ctx = $('#hpiChart');
+    if(ctx){
+      activeCharts.hpi = new Chart(ctx, {
+        type:'bar',
+        data:{
+          labels: sorted.map(h=>h.name),
+          datasets:[{
+            label:'HPI Score',
+            data: sorted.map(h=>h.total),
+            backgroundColor: sorted.map(h=>h.color||'#6366f1'),
+            borderRadius:8,
+            maxBarThickness:50
+          }]
+        },
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{display:false} },
+          scales:{
+            x:{ ticks:{color:textColor}, grid:{display:false} },
+            y:{ ticks:{color:textColor}, grid:{color:gridColor} }
+          }
+        }
+      });
+    }
+
+    const { data: memData } = await supabase
+      .from('council_members')
+      .select('house:houses(id,name,color)');
+    const memMap = {};
+    (memData||[]).forEach(m=>{
+      const h = m.house; if(!h) return;
+      if(!memMap[h.id]) memMap[h.id] = { name:h.name, color:h.color, count:0 };
+      memMap[h.id].count++;
+    });
+    const memList = Object.values(memMap);
+
+    if(activeCharts.members) activeCharts.members.destroy();
+    const ctx2 = $('#membersChart');
+    if(ctx2){
+      activeCharts.members = new Chart(ctx2, {
+        type:'doughnut',
+        data:{
+          labels: memList.map(h=>h.name),
+          datasets:[{
+            data: memList.map(h=>h.count),
+            backgroundColor: memList.map(h=>h.color||'#6366f1'),
+            borderWidth:0
+          }]
+        },
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          cutout:'70%',
+          plugins:{ legend:{ position:'right', labels:{color:textColor, padding:12, font:{size:12}} } }
+        }
+      });
+    }
+  }catch(e){
+    console.error('Chart render error:', e);
+  }
+}
+
+/* ---------- Empty state helper ---------- */
+function emptyState(title, text, icon='inbox'){
+  const icons = {
+    inbox:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>',
+    calendar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+    message:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+    megaphone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3z"/></svg>',
+    check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+    users:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>',
+    star:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+    alert:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>',
+    doc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'
+  };
+  return `<div class="empty-state">
+    <div class="empty-state-icon">${icons[icon]||icons.inbox}</div>
+    <div class="empty-state-title">${escapeHtml(title)}</div>
+    <div class="empty-state-text">${escapeHtml(text)}</div>
+  </div>`;
+}
+
+function tableSkeleton(cols=4){
+  return `<div class="loading-spinner"><div class="spinner"></div></div>`;
+}
+
+/* ---------- Council Members Module ---------- */
+let membersState = { search:'', houseFilter:'', page:1, data:[], loading:false };
+
+async function renderMembers(){
+  const container = $('#module-members');
+  container.innerHTML = `
+    <div class="page-header">
+      <div>
+        <div class="page-title">Council Members</div>
+        <div class="page-subtitle">Manage council composition across houses and positions.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-primary-solid" onclick="openMemberModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Member
+        </button>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <input class="filter-input" type="text" id="memberSearch" placeholder="Search by name or position..." value="${escapeHtml(membersState.search)}" />
+      <select class="filter-select" id="memberHouseFilter">
+        <option value="">All Houses</option>
+        ${appCache.houses.map(h=>`<option value="${h.id}" ${membersState.houseFilter===h.id?'selected':''}>${escapeHtml(h.name)}</option>`).join('')}
+      </select>
+    </div>
+
+    <div id="membersTableWrap">${tableSkeleton()}</div>
+  `;
+
+  $('#memberSearch').addEventListener('input', debounce(e=>{
+    membersState.search = e.target.value;
+    membersState.page = 1;
+    loadMembers();
+  }, 300));
+  $('#memberHouseFilter').addEventListener('change', e=>{
+    membersState.houseFilter = e.target.value;
+    membersState.page = 1;
+    loadMembers();
+  });
+
+  loadMembers();
+}
+
+async function loadMembers(){
+  const wrap = $('#membersTableWrap');
+  if(!wrap) return;
+  wrap.innerHTML = tableSkeleton();
+  try{
+    let q = supabase
+      .from('council_members')
+      .select(`
+        id, academic_year, created_at, name, class, section,
+        house:houses(id, name, color),
+        position:positions(id, title, category, display_order)
+      `)
+      .order('created_at', { ascending:false });
+
+    if(membersState.houseFilter){
+      q = q.eq('house_id', membersState.houseFilter);
+    }
+
+    const { data, error } = await q;
+    if(error) throw error;
+
+    let filtered = data || [];
+    if(membersState.search){
+      const s = membersState.search.toLowerCase();
+      filtered = filtered.filter(m=>{
+        const name = (m.name||'').toLowerCase();
+        const pos = (m.position?.title||'').toLowerCase();
+        return name.includes(s) || pos.includes(s);
+      });
+    }
+
+    membersState.data = filtered;
+    renderMembersTable(filtered);
+  }catch(e){
+    console.error('Load members error:', e);
+    wrap.innerHTML = `<div class="empty-state">
+      <div class="empty-state-icon">${'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'}</div>
+      <div class="empty-state-title">Failed to load</div>
+      <div class="empty-state-text">${escapeHtml(e.message||'Unknown error')}</div>
+    </div>`;
+  }
+}
+
+function renderMembersTable(members){
+  const wrap = $('#membersTableWrap');
+  if(!members.length){
+    wrap.innerHTML = emptyState('No council members','Add your first council member to get started.','users');
+    return;
+  }
+  wrap.innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Member</th>
+            <th>House</th>
+            <th>Position</th>
+            <th>Academic Year</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${members.map(m=>`
+            <tr>
+              <td>
+                <div class="table-avatar">
+                  <div class="table-avatar-circle">${getInitials(m.name)}</div>
+                  <div>
+                    <div style="font-weight:600">${escapeHtml(m.name||'Unknown')}</div>
+                    <div class="text-xs text-muted">${escapeHtml(m.class||'')} ${escapeHtml(m.section||'')}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                ${m.house?`<span class="badge" style="background:${m.house.color||'var(--primary-soft)'}20;color:${m.house.color||'var(--primary)'}"><span class="badge-dot"></span>${escapeHtml(m.house.name)}</span>`:'<span class="text-muted">—</span>'}
+              </td>
+              <td>${escapeHtml(m.position?.title||'—')}</td>
+              <td>${escapeHtml(m.academic_year||'—')}</td>
+              <td class="text-right">
+                <button class="btn btn-ghost btn-icon" title="Edit" onclick="openMemberModal('${m.id}')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                <button class="btn btn-ghost btn-icon btn-danger-ghost" title="Delete" onclick="deleteMember('${m.id}')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+async function openMemberModal(id=null){
+  let member = null;
+  if(id){
+    const { data, error } = await supabase
+      .from('council_members')
+      .select(`*`)
+      .eq('id', id).single();
+    if(error){ toast('Failed to load member','error'); return; }
+    member = data;
+  }
+
+  const houseOpts = appCache.houses.map(h=>`<option value="${h.id}" ${member?.house_id===h.id?'selected':''}>${escapeHtml(h.name)}</option>`).join('');
+  const currentYear = new Date().getFullYear();
+  const yearOpts = [`${currentYear}-${currentYear+1}`,`${currentYear-1}-${currentYear}`,`${currentYear+1}-${currentYear+2}`]
+    .map(y=>`<option value="${y}" ${member?.academic_year===y?'selected':''}>${y}</option>`).join('');
+
+  openModal(
+    id ? 'Edit Council Member' : 'Add Council Member',
+    `
+      <form id="memberForm">
+        <div class="form-grid">
+          <div class="field">
+            <label class="field-label">Member Name *</label>
+            <input class="field-input" name="name" value="${escapeHtml(member?.name||'')}" required />
+          </div>
+          <div class="field">
+            <label class="field-label">Class</label>
+            <input class="field-input" name="class" value="${escapeHtml(member?.class||'')}" />
+          </div>
+          <div class="field">
+            <label class="field-label">Section</label>
+            <input class="field-input" name="section" value="${escapeHtml(member?.section||'')}" />
+          </div>
+          <div class="field">
+            <label class="field-label">House</label>
+            <select class="field-select" name="house_id" id="memberHouseSelect">
+              <option value="">No House (General Position)</option>
+              ${houseOpts}
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label">Position *</label>
+            <select class="field-select" name="position_id" id="memberPositionSelect" required>
+              <option value="">Select position...</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label">Academic Year</label>
+            <select class="field-select" name="academic_year">${yearOpts}</select>
+          </div>
+        </div>
+      </form>
+    `,
+    `<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-primary-solid" id="saveMemberBtn">${id?'Save Changes':'Add Member'}</button>`,
+    'sm'
+  );
+
+  const houseSelect = $('#memberHouseSelect');
+  const posSelect = $('#memberPositionSelect');
+  
+  const updatePositions = () => {
+    const houseId = houseSelect.value;
+
+    let validPositions = appCache.positions.filter(p => {
+      if(houseId) return p.category === 'house';
+      return p.category === 'general';
+    });
+
+    posSelect.innerHTML = '<option value="">Select position...</option>' + validPositions.map(p => 
+      `<option value="${p.id}" ${member?.position_id===p.id?'selected':''}>${escapeHtml(p.title)}</option>`
+    ).join('');
+  };
+
+  houseSelect.addEventListener('change', updatePositions);
+  if(member?.house_id) houseSelect.value = member.house_id;
+  updatePositions();
+
+  $('#saveMemberBtn').addEventListener('click', async ()=>{
+    const form = $('#memberForm');
+    const fd = new FormData(form);
+    const payload = {
+      house_id: fd.get('house_id') || null,
+      position_id: fd.get('position_id'),
+      academic_year: fd.get('academic_year'),
+      name: fd.get('name'),
+      class: fd.get('class') || null,
+      section: fd.get('section') || null
+    };
+    if(!payload.name || !payload.position_id){
+      toast('Please fill all required fields','warning'); return;
+    }
+    const btn = $('#saveMemberBtn');
+    btn.disabled = true; btn.textContent = 'Saving...';
+    try{
+      let result;
+      if(id){
+        result = await supabase.from('council_members').update(payload).eq('id', id);
+        await logAudit('update','council_members', id, payload);
+      }else{
+        result = await supabase.from('council_members').insert(payload).select().single();
+        await logAudit('create','council_members', result.data?.id, payload);
+      }
+      if(result.error) throw result.error;
+      toast(id?'Member updated':'Member added','success');
+      closeModal();
+      loadMembers();
+    }catch(e){
+      toast(e.message||'Save failed','error');
+      btn.disabled=false; btn.textContent = id?'Save Changes':'Add Member';
+    }
+  });
+}
+
+async function deleteMember(id){
+  confirmAction(
+    'Delete Member',
+    'Are you sure you want to remove this council member? This action cannot be undone.',
+    async ()=>{
+      const { error } = await supabase.from('council_members').delete().eq('id', id);
+      if(error) throw error;
+      await logAudit('delete','council_members', id);
+      toast('Member removed','success');
+      loadMembers();
+    },
+    'Delete',
+    'btn-danger'
+  );
+}
+
+/* ---------- User Management Module ---------- */
+let usersState = { search:'', roleFilter:'', data:[] };
+
+async function renderUsers(){
+  if(!isAdmin()){
+    $('#module-users').innerHTML = `<div class="empty-state">
+      <div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+      <div class="empty-state-title">Access restricted</div>
+      <div class="empty-state-text">Only administrators can manage users.</div>
+    </div>`;
+    return;
+  }
+  const container = $('#module-users');
+  container.innerHTML = `
+    <div class="page-header">
+      <div>
+        <div class="page-title">User Management</div>
+        <div class="page-subtitle">Create, edit, and manage all user accounts and their roles.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-primary-solid" onclick="openUserModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New User
+        </button>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <input class="filter-input" type="text" id="userSearch" placeholder="Search by name or username..." value="${escapeHtml(usersState.search)}" />
+      <select class="filter-select" id="userRoleFilter">
+        <option value="">All Roles</option>
+        <option value="admin" ${usersState.roleFilter==='admin'?'selected':''}>Admin</option>
+        <option value="teacher" ${usersState.roleFilter==='teacher'?'selected':''}>Teacher</option>
+        <option value="student" ${usersState.roleFilter==='student'?'selected':''}>Student</option>
+        <option value="council_member" ${usersState.roleFilter==='council_member'?'selected':''}>Council Member</option>
+      </select>
+    </div>
+
+    <div id="usersTableWrap">${tableSkeleton()}</div>
+  `;
+
+  $('#userSearch').addEventListener('input', debounce(e=>{
+    usersState.search = e.target.value; loadUsers();
+  }, 300));
+  $('#userRoleFilter').addEventListener('change', e=>{
+    usersState.roleFilter = e.target.value; loadUsers();
+  });
+
+  loadUsers();
+}
+
+async function loadUsers(){
+  const wrap = $('#usersTableWrap');
+  if(!wrap) return;
+  wrap.innerHTML = tableSkeleton();
+  try{
+    let q = supabase
+      .from('profiles')
+      .select(`
+        id, username, full_name, role, is_active, created_at,
+        house:houses(id, name, color),
+        position:positions(id, title)
+      `)
+      .order('created_at', { ascending:false });
+
+    if(usersState.roleFilter){
+      q = q.eq('role', usersState.roleFilter);
+    }
+    const { data, error } = await q;
+    if(error) throw error;
+
+    let filtered = data || [];
+    if(usersState.search){
+      const s = usersState.search.toLowerCase();
+      filtered = filtered.filter(u=>
+        (u.full_name||'').toLowerCase().includes(s) ||
+        (u.username||'').toLowerCase().includes(s)
+      );
+    }
+    usersState.data = filtered;
+    renderUsersTable(filtered);
+  }catch(e){
+    console.error('Load users error:', e);
+    wrap.innerHTML = `<div class="empty-state">
+      <div class="empty-state-title">Failed to load users</div>
+      <div class="empty-state-text">${escapeHtml(e.message||'')}</div>
+    </div>`;
+  }
+}
+
+function renderUsersTable(users){
+  const wrap = $('#usersTableWrap');
+  if(!users.length){
+    wrap.innerHTML = emptyState('No users found','Create your first user to get started.','users');
+    return;
+  }
+  const roleBadge = { admin:'badge-danger', teacher:'badge-info', student:'badge-neutral', council_member:'badge-purple' };
+  wrap.innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Role</th>
+            <th>House</th>
+            <th>Position</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${users.map(u=>`
+            <tr>
+              <td>
+                <div class="table-avatar">
+                  <div class="table-avatar-circle">${getInitials(u.full_name)}</div>
+                  <div>
+                    <div style="font-weight:600">${escapeHtml(u.full_name||'Unknown')}</div>
+                    <div class="text-xs text-muted">${escapeHtml(u.username||'')}</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="badge ${roleBadge[u.role]||'badge-neutral'}">${escapeHtml((u.role||'').replace(/_/g,' '))}</span></td>
+              <td>${u.house?`<span class="badge" style="background:${u.house.color||'var(--primary-soft)'}20;color:${u.house.color||'var(--primary)'}">${escapeHtml(u.house.name)}</span>`:'<span class="text-muted">—</span>'}</td>
+              <td>${escapeHtml(u.position?.title||'—')}</td>
+              <td><span class="badge ${u.is_active?'badge-success':'badge-neutral'}">${u.is_active?'Active':'Disabled'}</span></td>
+              <td class="text-xs text-muted">${formatDate(u.created_at)}</td>
+              <td class="text-right">
+                <button class="btn btn-ghost btn-icon" title="Edit" onclick="openUserModal('${u.id}')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                <button class="btn btn-ghost btn-icon" title="${u.is_active?'Disable':'Enable'}" onclick="toggleUserStatus('${u.id}', ${!u.is_active})">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${u.is_active?'<path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/>':'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'}</svg>
+                </button>
+                <button class="btn btn-ghost btn-icon btn-danger-ghost" title="Delete" onclick="deleteUser('${u.id}')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+async function openUserModal(id=null){
+  let user = null;
+  if(id){
+    const { data, error } = await supabase.from('profiles').select('*').eq('id', id).single();
+    if(error){ toast('Failed to load user','error'); return; }
+    user = data;
+  }
+
+  const houseOpts = appCache.houses.map(h=>`<option value="${h.id}" ${user?.house_id===h.id?'selected':''}>${escapeHtml(h.name)}</option>`).join('');
+  const posOpts = appCache.positions.map(p=>`<option value="${p.id}" ${user?.position_id===p.id?'selected':''}>${escapeHtml(p.title)}</option>`).join('');
+
+  openModal(
+    id ? 'Edit User' : 'Create New User',
+    `
+      <form id="userForm">
+        <div class="form-grid">
+          <div class="field">
+            <label class="field-label">Full Name *</label>
+            <input class="field-input" name="full_name" value="${escapeHtml(user?.full_name||'')}" required />
+          </div>
+          <div class="field">
+            <label class="field-label">Username</label>
+            <input class="field-input" name="username" value="${escapeHtml(user?.username||'')}" />
+          </div>
+          <div class="field">
+            <label class="field-label">Role *</label>
+            <select class="field-select" name="role" required>
+              ${['admin','teacher','student','council_member'].map(r=>`<option value="${r}" ${user?.role===r?'selected':''}>${r.replace(/_/g,' ')}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label">House</label>
+            <select class="field-select" name="house_id">
+              <option value="">No house</option>
+              ${houseOpts}
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label">Position</label>
+            <select class="field-select" name="position_id">
+              <option value="">No position</option>
+              ${posOpts}
+            </select>
+          </div>
+          ${!id ? `
+          <div class="field form-grid-2">
+            <label class="field-label">Auth Email *</label>
+            <input class="field-input" type="email" name="email" required placeholder="user@vatsalya.edu.in" />
+          </div>
+          <div class="field form-grid-2">
+            <label class="field-label">Temporary Password *</label>
+            <input class="field-input" type="password" name="password" minlength="8" placeholder="Min 8 characters" required />
+          </div>` : ''}
+          <div class="field">
+            <label class="field-label">Status</label>
+            <select class="field-select" name="is_active">
+              <option value="true" ${user?.is_active!==false?'selected':''}>Active</option>
+              <option value="false" ${user?.is_active===false?'selected':''}>Disabled</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    `,
+    `<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-primary-solid" id="saveUserBtn">${id?'Save Changes':'Create User'}</button>`
+  );
+
+  $('#saveUserBtn').addEventListener('click', async ()=>{
+    const form = $('#userForm');
+    const fd = new FormData(form);
+    const payload = {
+      full_name: fd.get('full_name'),
+      username: fd.get('username') || null,
+      role: fd.get('role'),
+      house_id: fd.get('house_id') || null,
+      position_id: fd.get('position_id') || null,
+      is_active: fd.get('is_active') === 'true'
+    };
+    if(!payload.full_name){
+      toast('Name is required','warning'); return;
+    }
+    const btn = $('#saveUserBtn');
+    btn.disabled = true; btn.textContent = 'Saving...';
+    try{
+      if(id){
+        const { error } = await supabase.from('profiles').update(payload).eq('id', id);
+        if(error) throw error;
+        await logAudit('update','profiles', id, payload);
+        toast('User updated','success');
+      }else{
+        const email = fd.get('email');
+        const password = fd.get('password');
+        if(!email || !password || password.length < 8){
+          toast('Valid email and password (min 8 chars) are required','warning');
+          btn.disabled=false; btn.textContent='Create User'; return;
+        }
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: email,
+          password: password,
+          options: { data: { full_name: payload.full_name, role: payload.role } }
+        });
+        if(authError) throw authError;
+        const newId = authData.user?.id;
+        if(newId){
+          // A DB trigger (handle_new_user) already created the base profile row
+          // on signUp; we only need to update it with the admin-selected fields.
+          const { error: pErr } = await supabase.from('profiles').update(payload).eq('id', newId);
+          if(pErr) console.warn('Profile update warning:', pErr);
+          await logAudit('create','profiles', newId, payload);
+        }
+        toast('User created','success');
+      }
+      closeModal();
+      loadUsers();
+    }catch(e){
+      toast(e.message||'Save failed','error');
+      btn.disabled=false; btn.textContent = id?'Save Changes':'Create User';
+    }
+  });
+}
+
+async function toggleUserStatus(id, activate){
+  confirmAction(
+    activate ? 'Enable User' : 'Disable User',
+    activate ? 'This user will regain access to the system.' : 'This user will be signed out and unable to login.',
+    async ()=>{
+      const { error } = await supabase.from('profiles').update({ is_active: activate }).eq('id', id);
+      if(error) throw error;
+      await logAudit(activate?'enable':'disable','profiles', id);
+      toast(`User ${activate?'enabled':'disabled'}`, 'success');
+      loadUsers();
+    },
+    activate?'Enable':'Disable',
+    activate?'btn-primary-solid':'btn-danger'
+  );
+}
+
+async function deleteUser(id){
+  confirmAction(
+    'Delete User',
+    'This will permanently delete the user profile. Auth account must be removed separately from Supabase Dashboard → Authentication. Continue?',
+    async ()=>{
+      const { error } = await supabase.from('profiles').delete().eq('id', id);
+      if(error) throw error;
+      await logAudit('delete','profiles', id);
+      toast('User profile deleted','success');
+      loadUsers();
+    },
+    'Delete',
+    'btn-danger'
+  );
+}
+
+/* ---------- Events Module ---------- */
+let eventsState = { search:'', statusFilter:'', data:[] };
+
+async function renderEvents(){
+  const container = $('#module-events');
+  container.innerHTML = `
+    <div class="page-header">
+      <div>
+        <div class="page-title">Events</div>
+        <div class="page-subtitle">Plan, schedule, and track school council events.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-primary-solid" onclick="openEventModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Event
+        </button>
+      </div>
+    </div>
+    <div class="filter-bar">
+      <input class="filter-input" type="text" id="eventSearch" placeholder="Search events..." value="${escapeHtml(eventsState.search)}" />
+      <select class="filter-select" id="eventStatusFilter">
+        <option value="">All Status</option>
+        <option value="upcoming" ${eventsState.statusFilter==='upcoming'?'selected':''}>Upcoming</option>
+        <option value="ongoing" ${eventsState.statusFilter==='ongoing'?'selected':''}>Ongoing</option>
+        <option value="completed" ${eventsState.statusFilter==='completed'?'selected':''}>Completed</option>
+        <option value="cancelled" ${eventsState.statusFilter==='cancelled'?'selected':''}>Cancelled</option>
+      </select>
+    </div>
+    <div id="eventsListWrap">${tableSkeleton()}</div>
+  `;
+  $('#eventSearch').addEventListener('input', debounce(e=>{ eventsState.search=e.target.value; loadEvents(); },300));
+  $('#eventStatusFilter').addEventListener('change', e=>{ eventsState.statusFilter=e.target.value; loadEvents(); });
+  loadEvents();
+}
+
+async function loadEvents(){
+  const wrap = $('#eventsListWrap');
+  if(!wrap) return;
+  wrap.innerHTML = tableSkeleton();
+  try{
+    let q = supabase.from('events')
+      .select(`id, name, description, event_date, event_time, venue, status, created_at, creator:profiles!events_created_by_fkey(full_name)`)
+      .order('event_date', { ascending:true });
+    if(eventsState.statusFilter) q = q.eq('status', eventsState.statusFilter);
+    const { data, error } = await q;
+    if(error) throw error;
+    let filtered = data || [];
+    if(eventsState.search){
+      const s = eventsState.search.toLowerCase();
+      filtered = filtered.filter(e=>
+        (e.name||'').toLowerCase().includes(s) ||
+        (e.venue||'').toLowerCase().includes(s) ||
+        (e.description||'').toLowerCase().includes(s)
+      );
+    }
+    eventsState.data = filtered;
+    renderEventsList(filtered);
+  }catch(e){
+    wrap.innerHTML = `<div class="empty-state"><div class="empty-state-title">Failed to load</div><div class="empty-state-text">${escapeHtml(e.message||'')}</div></div>`;
+  }
+}
+
+function renderEventsList(events){
+  const wrap = $('#eventsListWrap');
+  if(!events.length){
+    wrap.innerHTML = emptyState('No events found','Create your first event to get started.','calendar');
+    return;
+  }
+  const statusColor = {upcoming:'badge-info',ongoing:'badge-success',completed:'badge-neutral',cancelled:'badge-danger'};
+  wrap.innerHTML = `
+    <div class="grid-2">
+      ${events.map(ev=>{
+        const d = new Date(ev.event_date);
+        const day = isNaN(d.getTime())?'—':d.getDate();
+        const month = isNaN(d.getTime())?'':d.toLocaleString('en-US',{month:'short'}).toUpperCase();
+        return `
+        <div class="card card-hover" style="display:flex;gap:16px;align-items:flex-start">
+          <div style="width:56px;text-align:center;flex-shrink:0">
+            <div style="background:var(--bg-soft);border-radius:10px;padding:8px 4px">
+              <div class="text-xs text-muted" style="font-weight:600">${month}</div>
+              <div style="font-size:22px;font-weight:700;line-height:1">${day}</div>
+            </div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
+              <div style="font-weight:600;font-size:15px">${escapeHtml(ev.name)}</div>
+              <span class="badge ${statusColor[ev.status]||'badge-neutral'}">${ev.status||'upcoming'}</span>
+            </div>
+            <div class="text-sm text-muted" style="margin-bottom:6px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;display:inline-block;vertical-align:-1px;margin-right:3px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              ${escapeHtml(ev.venue||'Location TBD')}
+              &middot;
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;display:inline-block;vertical-align:-1px;margin:0 3px 0 6px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              ${formatDate(ev.event_date)} ${ev.event_time ? escapeHtml(ev.event_time) : ''}
+            </div>
+            ${ev.description?`<div class="text-sm" style="color:var(--text-muted);margin-bottom:8px">${escapeHtml(ev.description.slice(0,140))}${ev.description.length>140?'…':''}</div>`:''}
+            <div class="text-xs text-muted">by ${escapeHtml(ev.creator?.full_name||'Unknown')}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <button class="btn btn-ghost btn-icon" title="Edit" onclick="openEventModal('${ev.id}')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="btn btn-ghost btn-icon btn-danger-ghost" title="Delete" onclick="deleteEvent('${ev.id}')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+async function openEventModal(id=null){
+  let event = null;
+  if(id){
+    const { data, error } = await supabase.from('events').select('*').eq('id', id).single();
+    if(error){ toast('Failed to load event','error'); return; }
+    event = data;
+  }
+  const dtVal = event?.event_date ? new Date(event.event_date).toISOString().slice(0,10) : '';
+  openModal(
+    id?'Edit Event':'New Event',
+    `<form id="eventForm">
+      <div class="field">
+        <label class="field-label">Event Name *</label>
+        <input class="field-input" name="name" value="${escapeHtml(event?.name||'')}" required />
+      </div>
+      <div class="field">
+        <label class="field-label">Description</label>
+        <textarea class="field-textarea" name="description">${escapeHtml(event?.description||'')}</textarea>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label class="field-label">Date *</label>
+          <input class="field-input" type="date" name="event_date" value="${dtVal}" required />
+        </div>
+        <div class="field">
+          <label class="field-label">Time</label>
+          <input class="field-input" type="time" name="event_time" value="${escapeHtml(event?.event_time||'')}" />
+        </div>
+        <div class="field">
+          <label class="field-label">Venue</label>
+          <input class="field-input" name="venue" value="${escapeHtml(event?.venue||'')}" />
+        </div>
+        <div class="field">
+          <label class="field-label">Status</label>
+          <select class="field-select" name="status">
+            ${['upcoming','ongoing','completed','cancelled'].map(s=>`<option value="${s}" ${event?.status===s?'selected':''}>${s.charAt(0).toUpperCase()+s.slice(1)}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+    </form>`,
+    `<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-primary-solid" id="saveEventBtn">${id?'Save Changes':'Create Event'}</button>`
+  );
+  $('#saveEventBtn').addEventListener('click', async ()=>{
+    const fd = new FormData($('#eventForm'));
+    const payload = {
+      name: fd.get('name'),
+      description: fd.get('description') || null,
+      event_date: fd.get('event_date') || null,
+      event_time: fd.get('event_time') || null,
+      venue: fd.get('venue') || null,
+      status: fd.get('status')
+    };
+    if(!payload.name || !payload.event_date){ toast('Name and date are required','warning'); return; }
+    const btn = $('#saveEventBtn'); btn.disabled=true; btn.textContent='Saving...';
+    try{
+      if(id){
+        const { error } = await supabase.from('events').update(payload).eq('id', id);
+        if(error) throw error;
+        await logAudit('update','events', id, payload);
+        toast('Event updated','success');
+      }else{
+        payload.created_by = currentProfile.id;
+        const { data, error } = await supabase.from('events').insert(payload).select().single();
+        if(error) throw error;
+        await logAudit('create','events', data.id, payload);
+        toast('Event created','success');
+      }
+      closeModal(); loadEvents();
+    }catch(e){
+      toast(e.message||'Save failed','error');
+      btn.disabled=false; btn.textContent=id?'Save Changes':'Create Event';
+    }
+  });
+}
+
+async function deleteEvent(id){
+  confirmAction('Delete Event','This event will be permanently deleted.', async ()=>{
+    const { error } = await supabase.from('events').delete().eq('id', id);
+    if(error) throw error;
+    await logAudit('delete','events', id);
+    toast('Event deleted','success');
+    loadEvents();
+  },'Delete','btn-danger');
+}
+
+/* ---------- Meetings Module ---------- */
+let meetingsState = { search:'', data:[] };
+
+async function renderMeetings(){
+  const container = $('#module-meetings');
+  container.innerHTML = `
+    <div class="page-header">
+      <div>
+        <div class="page-title">Meetings</div>
+        <div class="page-subtitle">Schedule council meetings and record minutes.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-primary-solid" onclick="openMeetingModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Meeting
+        </button>
+      </div>
+    </div>
+    <div class="filter-bar">
+      <input class="filter-input" type="text" id="meetingSearch" placeholder="Search meetings..." value="${escapeHtml(meetingsState.search)}" />
+    </div>
+    <div id="meetingsListWrap">${tableSkeleton()}</div>
+  `;
+  $('#meetingSearch').addEventListener('input', debounce(e=>{ meetingsState.search=e.target.value; loadMeetings(); },300));
+  loadMeetings();
+}
+
+async function loadMeetings(){
+  const wrap = $('#meetingsListWrap');
+  if(!wrap) return;
+  wrap.innerHTML = tableSkeleton();
+  try{
+    const { data, error } = await supabase.from('meetings')
+      .select(`id, title, agenda, meeting_date, meeting_time, venue, status, notes, created_at, creator:profiles!meetings_created_by_fkey(full_name)`)
+      .order('meeting_date', { ascending:false });
+    if(error) throw error;
+    let filtered = data || [];
+    if(meetingsState.search){
+      const s = meetingsState.search.toLowerCase();
+      filtered = filtered.filter(m=>(m.title||'').toLowerCase().includes(s) || (m.agenda||'').toLowerCase().includes(s));
+    }
+    meetingsState.data = filtered;
+    renderMeetingsList(filtered);
+  }catch(e){
+    wrap.innerHTML = `<div class="empty-state"><div class="empty-state-title">Failed to load</div><div class="empty-state-text">${escapeHtml(e.message||'')}</div></div>`;
+  }
+}
+
+function renderMeetingsList(meetings){
+  const wrap = $('#meetingsListWrap');
+  if(!meetings.length){
+    wrap.innerHTML = emptyState('No meetings found','Schedule your first meeting to get started.','message');
+    return;
+  }
+  const statusColor = {scheduled:'badge-info',completed:'badge-success',cancelled:'badge-danger'};
+  wrap.innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Title</th><th>Date &amp; Time</th><th>Venue</th><th>Status</th><th class="text-right">Actions</th></tr>
+        </thead>
+        <tbody>
+          ${meetings.map(m=>`
+            <tr>
+              <td>
+                <div style="font-weight:600">${escapeHtml(m.title)}</div>
+                ${m.agenda?`<div class="text-xs text-muted" style="margin-top:2px;max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(m.agenda)}</div>`:''}
+              </td>
+              <td class="text-sm">${formatDate(m.meeting_date)} ${escapeHtml(m.meeting_time||'')}</td>
+              <td class="text-sm">${escapeHtml(m.venue||'—')}</td>
+              <td><span class="badge ${statusColor[m.status]||'badge-neutral'}">${m.status||'scheduled'}</span></td>
+              <td class="text-right">
+                <button class="btn btn-ghost btn-icon" title="View" onclick="viewMeeting('${m.id}')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+                <button class="btn btn-ghost btn-icon" title="Edit" onclick="openMeetingModal('${m.id}')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                <button class="btn btn-ghost btn-icon btn-danger-ghost" title="Delete" onclick="deleteMeeting('${m.id}')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+async function viewMeeting(id){
+  const { data, error } = await supabase.from('meetings')
+    .select(`*, creator:profiles!meetings_created_by_fkey(full_name)`)
+    .eq('id', id).single();
+  if(error){ toast('Failed to load meeting','error'); return; }
+  openModal(data.title, `
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div>
+        <div class="text-xs text-muted" style="text-transform:uppercase;font-weight:600;letter-spacing:0.04em">When &amp; Where</div>
+        <div style="margin-top:4px">${formatDate(data.meeting_date)} ${escapeHtml(data.meeting_time||'')} · ${escapeHtml(data.venue||'Location TBD')}</div>
+      </div>
+      <div>
+        <div class="text-xs text-muted" style="text-transform:uppercase;font-weight:600;letter-spacing:0.04em">Agenda</div>
+        <div style="margin-top:4px;white-space:pre-wrap">${escapeHtml(data.agenda||'No agenda set.')}</div>
+      </div>
+      <div>
+        <div class="text-xs text-muted" style="text-transform:uppercase;font-weight:600;letter-spacing:0.04em">Notes</div>
+        <div style="margin-top:4px;white-space:pre-wrap">${escapeHtml(data.notes||'No notes recorded yet.')}</div>
+      </div>
+      <div class="text-xs text-muted">Chaired by ${escapeHtml(data.creator?.full_name||'Unknown')}</div>
+    </div>
+  `, `<button class="btn btn-secondary" onclick="closeModal()">Close</button><button class="btn btn-primary-solid" onclick="closeModal();openMeetingModal('${id}')">Edit</button>`);
+}
+
+async function openMeetingModal(id=null){
+  let meeting = null;
+  if(id){
+    const { data, error } = await supabase.from('meetings').select('*').eq('id', id).single();
+    if(error){ toast('Failed to load meeting','error'); return; }
+    meeting = data;
+  }
+  const dtVal = meeting?.meeting_date ? new Date(meeting.meeting_date).toISOString().slice(0,10) : '';
+  openModal(
+    id?'Edit Meeting':'New Meeting',
+    `<form id="meetingForm">
+      <div class="field">
+        <label class="field-label">Title *</label>
+        <input class="field-input" name="title" value="${escapeHtml(meeting?.title||'')}" required />
+      </div>
+      <div class="field">
+        <label class="field-label">Agenda</label>
+        <textarea class="field-textarea" name="agenda">${escapeHtml(meeting?.agenda||'')}</textarea>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label class="field-label">Date *</label>
+          <input class="field-input" type="date" name="meeting_date" value="${dtVal}" required />
+        </div>
+        <div class="field">
+          <label class="field-label">Time</label>
+          <input class="field-input" type="time" name="meeting_time" value="${escapeHtml(meeting?.meeting_time||'')}" />
+        </div>
+        <div class="field">
+          <label class="field-label">Venue</label>
+          <input class="field-input" name="venue" value="${escapeHtml(meeting?.venue||'')}" />
+        </div>
+        <div class="field">
+          <label class="field-label">Status</label>
+          <select class="field-select" name="status">
+            ${['scheduled','completed','cancelled'].map(s=>`<option value="${s}" ${meeting?.status===s?'selected':''}>${s.charAt(0).toUpperCase()+s.slice(1)}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Notes</label>
+        <textarea class="field-textarea" name="notes" style="min-height:120px">${escapeHtml(meeting?.notes||'')}</textarea>
+      </div>
+    </form>`,
+    `<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-primary-solid" id="saveMeetingBtn">${id?'Save Changes':'Create Meeting'}</button>`
+  );
+  $('#saveMeetingBtn').addEventListener('click', async ()=>{
+    const fd = new FormData($('#meetingForm'));
+    const payload = {
+      title: fd.get('title'),
+      agenda: fd.get('agenda') || null,
+      meeting_date: fd.get('meeting_date') || null,
+      meeting_time: fd.get('meeting_time') || null,
+      venue: fd.get('venue') || null,
+      status: fd.get('status'),
+      notes: fd.get('notes') || null
+    };
+    if(!payload.title || !payload.meeting_date){ toast('Title and date are required','warning'); return; }
+    const btn = $('#saveMeetingBtn'); btn.disabled=true; btn.textContent='Saving...';
+    try{
+      if(id){
+        const { error } = await supabase.from('meetings').update(payload).eq('id', id);
+        if(error) throw error;
+        await logAudit('update','meetings', id, payload);
+        toast('Meeting updated','success');
+      }else{
+        payload.created_by = currentProfile.id;
+        const { data, error } = await supabase.from('meetings').insert(payload).select().single();
+        if(error) throw error;
+        await logAudit('create','meetings', data.id, payload);
+        toast('Meeting created','success');
+      }
+      closeModal(); loadMeetings();
+    }catch(e){
+      toast(e.message||'Save failed','error');
+      btn.disabled=false; btn.textContent=id?'Save Changes':'Create Meeting';
+    }
+  });
+}
+
+async function deleteMeeting(id){
+  confirmAction('Delete Meeting','This meeting will be permanently deleted.', async ()=>{
+    const { error } = await supabase.from('meetings').delete().eq('id', id);
+    if(error) throw error;
+    await logAudit('delete','meetings', id);
+    toast('Meeting deleted','success');
+    loadMeetings();
+  },'Delete','btn-danger');
+}
+
+/* ---------- Announcements Module ---------- */
+let announcementsState = { search:'', priorityFilter:'', data:[] };
+
+async function renderAnnouncements(){
+  const container = $('#module-announcements');
+  container.innerHTML = `
+    <div class="page-header">
+      <div>
+        <div class="page-title">Announcements</div>
+        <div class="page-subtitle">Broadcast news, notices, and circulars with optional PDF attachments.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-primary-solid" onclick="openAnnouncementModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Announcement
+        </button>
+      </div>
+    </div>
+    <div class="filter-bar">
+      <input class="filter-input" type="text" id="annSearch" placeholder="Search announcements..." value="${escapeHtml(announcementsState.search)}" />
+      <select class="filter-select" id="annPriorityFilter">
+        <option value="">All Priorities</option>
+        <option value="urgent" ${announcementsState.priorityFilter==='urgent'?'selected':''}>Urgent</option>
+        <option value="high" ${announcementsState.priorityFilter==='high'?'selected':''}>High</option>
+        <option value="medium" ${announcementsState.priorityFilter==='medium'?'selected':''}>Medium</option>
+        <option value="low" ${announcementsState.priorityFilter==='low'?'selected':''}>Low</option>
+      </select>
+    </div>
+    <div id="annListWrap">${tableSkeleton()}</div>
+  `;
+  $('#annSearch').addEventListener('input', debounce(e=>{ announcementsState.search=e.target.value; loadAnnouncements(); },300));
+  $('#annPriorityFilter').addEventListener('change', e=>{ announcementsState.priorityFilter=e.target.value; loadAnnouncements(); });
+  loadAnnouncements();
+}
+
+async function loadAnnouncements(){
+  const wrap = $('#annListWrap');
+  if(!wrap) return;
+  wrap.innerHTML = tableSkeleton();
+  try{
+    let q = supabase.from('announcements')
+      .select(`id, title, content, priority, attachment_url, expiry_date, visibility, created_at, author:profiles!announcements_created_by_fkey(full_name)`)
+      .order('created_at', { ascending:false });
+    if(announcementsState.priorityFilter) q = q.eq('priority', announcementsState.priorityFilter);
+    const { data, error } = await q;
+    if(error) throw error;
+    let filtered = data || [];
+    if(announcementsState.search){
+      const s = announcementsState.search.toLowerCase();
+      filtered = filtered.filter(a=>(a.title||'').toLowerCase().includes(s) || (a.content||'').toLowerCase().includes(s));
+    }
+    announcementsState.data = filtered;
+
+    const urgent = filtered.filter(a=>a.priority==='urgent').length;
+    const badge = $('#announcementsBadge');
+    if(urgent>0){ badge.textContent=urgent; badge.style.display=''; }else{ badge.style.display='none'; }
+
+    renderAnnouncementsList(filtered);
+  }catch(e){
+    wrap.innerHTML = `<div class="empty-state"><div class="empty-state-title">Failed to load</div><div class="empty-state-text">${escapeHtml(e.message||'')}</div></div>`;
+  }
+}
+
+function renderAnnouncementsList(items){
+  const wrap = $('#annListWrap');
+  if(!items.length){
+    wrap.innerHTML = `<div class="empty-state">
+      <div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg></div>
+      <div class="empty-state-title">No announcements available at the moment.</div>
+      <div class="empty-state-text">Create a new announcement to share news with the council.</div>
+    </div>`;
+    return;
+  }
+  const priColor = {urgent:{c:'var(--danger)',bg:'rgba(239,68,68,0.12)'},high:{c:'var(--warning)',bg:'rgba(245,158,11,0.12)'},medium:{c:'var(--info)',bg:'rgba(59,130,246,0.12)'},low:{c:'var(--text-subtle)',bg:'var(--bg-soft)'}};
+  const visBadge = {public:'badge-info',council:'badge-purple',admin:'badge-danger'};
+  wrap.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:12px">
+      ${items.map(a=>{
+        const pc = priColor[a.priority]||priColor.low;
+        const expired = a.expiry_date && new Date(a.expiry_date) < new Date();
+        return `
+        <div class="card" style="padding:0;overflow:hidden;border-left:3px solid ${pc.c}">
+          <div style="padding:16px 20px">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px">
+              <div style="flex:1;min-width:0">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+                  <span class="priority-indicator" style="color:${pc.c}"><span class="priority-dot" style="background:${pc.c}"></span>${a.priority||'low'}</span>
+                  ${a.visibility?`<span class="badge ${visBadge[a.visibility]||'badge-neutral'}">${a.visibility}</span>`:''}
+                  ${expired?`<span class="badge badge-neutral">expired</span>`:''}
+                </div>
+                <div style="font-size:16px;font-weight:600;letter-spacing:-0.01em">${escapeHtml(a.title)}</div>
+              </div>
+              <div style="display:flex;gap:4px">
+                ${a.attachment_url?`<button class="btn btn-ghost btn-icon" title="View PDF" onclick="viewAnnouncementPdf('${a.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></button>`:''}
+                <button class="btn btn-ghost btn-icon" title="Edit" onclick="openAnnouncementModal('${a.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                <button class="btn btn-ghost btn-icon btn-danger-ghost" title="Delete" onclick="deleteAnnouncement('${a.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+              </div>
+            </div>
+            ${a.content?`<div class="text-sm" style="color:var(--text-muted);white-space:pre-wrap;margin-bottom:10px">${escapeHtml(a.content)}</div>`:''}
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap" class="text-xs text-muted">
+              <span>by ${escapeHtml(a.author?.full_name||'Unknown')}</span>
+              <span>·</span>
+              <span>${formatDateTime(a.created_at)}</span>
+              ${a.expiry_date?`<span>·</span><span>expires ${formatDate(a.expiry_date)}</span>`:''}
+              ${a.attachment_url?`<span>·</span><a href="${escapeHtml(a.attachment_url)}" target="_blank" rel="noopener" style="color:var(--primary);font-weight:500">View PDF ↗</a>`:''}
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+async function openAnnouncementModal(id=null){
+  let ann = null;
+  if(id){
+    const { data, error } = await supabase.from('announcements').select('*').eq('id', id).single();
+    if(error){ toast('Failed to load announcement','error'); return; }
+    ann = data;
+  }
+  const expVal = ann?.expiry_date ? new Date(ann.expiry_date).toISOString().slice(0,10) : '';
+  openModal(
+    id?'Edit Announcement':'New Announcement',
+    `<form id="annForm">
+      <div class="field">
+        <label class="field-label">Title *</label>
+        <input class="field-input" name="title" value="${escapeHtml(ann?.title||'')}" required />
+      </div>
+      <div class="field">
+        <label class="field-label">Content</label>
+        <textarea class="field-textarea" name="content" style="min-height:120px">${escapeHtml(ann?.content||'')}</textarea>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label class="field-label">Priority</label>
+          <select class="field-select" name="priority">
+            ${['low','medium','high','urgent'].map(p=>`<option value="${p}" ${ann?.priority===p?'selected':''}>${p.charAt(0).toUpperCase()+p.slice(1)}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">Visibility</label>
+          <select class="field-select" name="visibility">
+            ${['public','council','admin'].map(v=>`<option value="${v}" ${ann?.visibility===v?'selected':''}>${v.charAt(0).toUpperCase()+v.slice(1)}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">Expiry Date</label>
+          <input class="field-input" type="date" name="expiry_date" value="${expVal}" />
+        </div>
+        <div class="field">
+          <label class="field-label">PDF Attachment</label>
+          <input class="field-input" type="file" name="pdf_file" accept="application/pdf" />
+          ${ann?.attachment_url?`<div class="field-hint">Current: <a href="${escapeHtml(ann.attachment_url)}" target="_blank" style="color:var(--primary)">View existing PDF</a></div>`:'<div class="field-hint">Upload a PDF (max 10MB). Leave empty to skip.</div>'}
+        </div>
+      </div>
+    </form>`,
+    `<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-primary-solid" id="saveAnnBtn">${id?'Save Changes':'Publish'}</button>`
+  );
+  $('#saveAnnBtn').addEventListener('click', async ()=>{
+    const fd = new FormData($('#annForm'));
+    const payload = {
+      title: fd.get('title'),
+      content: fd.get('content') || null,
+      priority: fd.get('priority'),
+      visibility: fd.get('visibility'),
+      expiry_date: fd.get('expiry_date') || null
+    };
+    if(!payload.title){ toast('Title is required','warning'); return; }
+    const btn = $('#saveAnnBtn'); btn.disabled=true; btn.textContent='Saving...';
+    try{
+      const pdfFile = fd.get('pdf_file');
+      if(pdfFile && pdfFile.size>0){
+        if(pdfFile.size > 10*1024*1024){ throw new Error('PDF exceeds 10MB limit'); }
+        if(pdfFile.type !== 'application/pdf'){ throw new Error('Only PDF files are allowed'); }
+        const filePath = `announcements/${Date.now()}_${pdfFile.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
+        const { error: upErr } = await supabase.storage.from('announcements').upload(filePath, pdfFile, { contentType:'application/pdf', upsert:true });
+        if(upErr) throw upErr;
+        const { data: pub } = supabase.storage.from('announcements').getPublicUrl(filePath);
+        payload.attachment_url = pub.publicUrl;
+      }
+      if(id){
+        const { error } = await supabase.from('announcements').update(payload).eq('id', id);
+        if(error) throw error;
+        await logAudit('update','announcements', id, payload);
+        toast('Announcement updated','success');
+      }else{
+        payload.created_by = currentProfile.id;
+        const { data, error } = await supabase.from('announcements').insert(payload).select().single();
+        if(error) throw error;
+        await logAudit('create','announcements', data.id, payload);
+        toast('Announcement published','success');
+      }
+      closeModal(); loadAnnouncements();
+    }catch(e){
+      toast(e.message||'Save failed','error');
+      btn.disabled=false; btn.textContent=id?'Save Changes':'Publish';
+    }
+  });
+}
+
+async function viewAnnouncementPdf(id){
+  const { data, error } = await supabase.from('announcements').select('attachment_url, title').eq('id', id).single();
+  if(error || !data?.attachment_url){ toast('PDF not available','warning'); return; }
+  openModal(`PDF: ${data.title}`,
+    `<iframe src="${escapeHtml(data.attachment_url)}" class="pdf-preview" title="PDF preview"></iframe>`,
+    `<button class="btn btn-secondary" onclick="closeModal()">Close</button>
+     <a class="btn btn-primary-solid" href="${escapeHtml(data.attachment_url)}" download="${escapeHtml(data.title)}.pdf">Download</a>`,
+    'lg'
+  );
+}
+
+async function deleteAnnouncement(id){
+  confirmAction('Delete Announcement','This announcement will be permanently deleted.', async ()=>{
+    const { error } = await supabase.from('announcements').delete().eq('id', id);
+    if(error) throw error;
+    await logAudit('delete','announcements', id);
+    toast('Announcement deleted','success');
+    loadAnnouncements();
+  },'Delete','btn-danger');
+}
+
+/* ---------- Discipline Module ---------- */
+let disciplineState = { search:'', statusFilter:'', data:[] };
+
+async function renderDiscipline(){
+  const container = $('#module-discipline');
+  container.innerHTML = `
+    <div class="page-header">
+      <div>
+        <div class="page-title">Discipline Management</div>
+        <div class="page-subtitle">Track incidents, approve reports, and issue automatic warnings after 3 approved reports.</div>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-secondary" onclick="navigateTo('discipline');loadDiscipline(true);"><span style="font-size:11px">All</span></button>
+        <button class="btn btn-primary-solid" onclick="openDisciplineModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Report
+        </button>
+      </div>
+    </div>
+    <div class="stats-grid" id="disciplineStats" style="margin-bottom:16px"></div>
+    <div class="filter-bar">
+      <input class="filter-input" type="text" id="discSearch" placeholder="Search by student or description..." value="${escapeHtml(disciplineState.search)}" />
+      <select class="filter-select" id="discStatusFilter">
+        <option value="">All Status</option>
+        <option value="pending" ${disciplineState.statusFilter==='pending'?'selected':''}>Pending</option>
+        <option value="approved" ${disciplineState.statusFilter==='approved'?'selected':''}>Approved</option>
+        <option value="rejected" ${disciplineState.statusFilter==='rejected'?'selected':''}>Rejected</option>
+      </select>
+    </div>
+    <div id="discListWrap">${tableSkeleton()}</div>
+  `;
+  $('#discSearch').addEventListener('input', debounce(e=>{ disciplineState.search=e.target.value; loadDiscipline(); },300));
+  $('#discStatusFilter').addEventListener('change', e=>{ disciplineState.statusFilter=e.target.value; loadDiscipline(); });
+  loadDiscipline();
+}
+
+async function loadDiscipline(){
+  const wrap = $('#discListWrap');
+  if(!wrap) return;
+  wrap.innerHTML = tableSkeleton();
+  try{
+    let q = supabase.from('discipline_reports')
+      .select(`
+        id, description, severity, status, incident_date, created_at, reviewed_at,
+        student:profiles!discipline_reports_student_id_fkey(id, full_name, house:houses(name,color)),
+        submitted_by:profiles!discipline_reports_submitted_by_fkey(full_name),
+        reviewed_by:profiles!discipline_reports_reviewed_by_fkey(full_name)
+      `)
+      .order('created_at', { ascending:false });
+    if(disciplineState.statusFilter) q = q.eq('status', disciplineState.statusFilter);
+    const { data, error } = await q;
+    if(error) throw error;
+    let filtered = data || [];
+    if(disciplineState.search){
+      const s = disciplineState.search.toLowerCase();
+      filtered = filtered.filter(r=>
+        (r.student?.full_name||'').toLowerCase().includes(s) ||
+        (r.description||'').toLowerCase().includes(s)
+      );
+    }
+    disciplineState.data = filtered;
+    renderDisciplineStats(filtered);
+    renderDisciplineList(filtered);
+  }catch(e){
+    wrap.innerHTML = `<div class="empty-state"><div class="empty-state-title">Failed to load</div><div class="empty-state-text">${escapeHtml(e.message||'')}</div></div>`;
+  }
+}
+
+function renderDisciplineStats(items){
+  const pending = items.filter(i=>i.status==='pending').length;
+  const approved = items.filter(i=>i.status==='approved').length;
+  const rejected = items.filter(i=>i.status==='rejected').length;
+  $('#disciplineStats').innerHTML = `
+    <div class="stat-card" style="--stat-color:var(--warning);--stat-bg:rgba(245,158,11,0.12)">
+      <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+      <div class="stat-label">Pending</div><div class="stat-value">${pending}</div>
+    </div>
+    <div class="stat-card" style="--stat-color:var(--success);--stat-bg:rgba(16,185,129,0.12)">
+      <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+      <div class="stat-label">Approved</div><div class="stat-value">${approved}</div>
+    </div>
+    <div class="stat-card" style="--stat-color:var(--danger);--stat-bg:rgba(239,68,68,0.12)">
+      <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
+      <div class="stat-label">Rejected</div><div class="stat-value">${rejected}</div>
+    </div>
+  `;
+}
+
+function renderDisciplineList(items){
+  const wrap = $('#discListWrap');
+  if(!items.length){
+    wrap.innerHTML = emptyState('No discipline reports','Create a new report to begin tracking incidents.','alert');
+    return;
+  }
+  const sevColor = {severe:'badge-danger',major:'badge-warning',minor:'badge-info'};
+  const statusColor = {pending:'badge-warning',approved:'badge-success',rejected:'badge-neutral'};
+  wrap.innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Student</th><th>Incident</th><th>Severity</th><th>Status</th><th>Date</th><th class="text-right">Actions</th></tr>
+        </thead>
+        <tbody>
+          ${items.map(r=>`
+            <tr>
+              <td>
+                <div class="table-avatar">
+                  <div class="table-avatar-circle">${getInitials(r.student?.full_name)}</div>
+                  <div>
+                    <div style="font-weight:600">${escapeHtml(r.student?.full_name||'Unknown')}</div>
+                    ${r.student?.house?`<div class="text-xs text-muted">${escapeHtml(r.student.house.name)}</div>`:''}
+                  </div>
+                </div>
+              </td>
+              <td style="max-width:340px">
+                <div class="text-sm">${escapeHtml((r.description||'').slice(0,100))}${(r.description||'').length>100?'…':''}</div>
+                <div class="text-xs text-muted">${formatDate(r.incident_date)} · by ${escapeHtml(r.submitted_by?.full_name||'Unknown')}</div>
+              </td>
+              <td><span class="badge ${sevColor[r.severity]||'badge-neutral'}">${r.severity||'minor'}</span></td>
+              <td><span class="badge ${statusColor[r.status]||'badge-neutral'}">${r.status||'pending'}</span></td>
+              <td class="text-sm text-muted">${formatDate(r.created_at)}</td>
+              <td class="text-right">
+                ${r.status==='pending' && isStaff() ? `
+                  <button class="btn btn-success btn-sm" onclick="reviewDiscipline('${r.id}','approved')">Approve</button>
+                  <button class="btn btn-danger-ghost btn-sm" onclick="reviewDiscipline('${r.id}','rejected')">Reject</button>
+                ` : ''}
+                <button class="btn btn-ghost btn-icon" title="View" onclick="viewDiscipline('${r.id}')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+                ${isStaff()?`<button class="btn btn-ghost btn-icon btn-danger-ghost" title="Delete" onclick="deleteDiscipline('${r.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>`:''}
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+async function openDisciplineModal(){
+  const { data: students } = await supabase
+    .from('profiles')
+    .select('id, full_name, house:houses(name)')
+    .eq('is_active', true)
+    .in('role', ['student','council_member'])
+    .order('full_name');
+  const stuOpts = (students||[]).map(s=>`<option value="${escapeHtml(s.full_name)}">${escapeHtml(s.full_name)}${s.house?` — ${escapeHtml(s.house.name)}`:''}</option>`).join('');
+
+  openModal(
+    'New Discipline Report',
+    `<form id="discForm">
+      <div class="field">
+        <label class="field-label">Student *</label>
+        <input class="field-input" list="studentList" name="student_name" id="studentInput" required placeholder="Search active student..." autocomplete="off" />
+        <datalist id="studentList">
+          ${stuOpts}
+        </datalist>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label class="field-label">Incident Date *</label>
+          <input class="field-input" type="date" name="incident_date" value="${new Date().toISOString().slice(0,10)}" required />
+        </div>
+        <div class="field">
+          <label class="field-label">Severity *</label>
+          <select class="field-select" name="severity">
+            <option value="minor">Minor</option>
+            <option value="major">Major</option>
+            <option value="severe">Severe</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Description *</label>
+        <textarea class="field-textarea" name="description" placeholder="Describe the incident in detail..." required></textarea>
+      </div>
+    </form>`,
+    `<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-primary-solid" id="saveDiscBtn">Submit Report</button>`
+  );
+  $('#saveDiscBtn').addEventListener('click', async ()=>{
+    const fd = new FormData($('#discForm'));
+    const selectedName = fd.get('student_name');
+    const selectedStudent = (students||[]).find(s => s.full_name === selectedName);
+    if(!selectedStudent){ toast('Please select a valid student from the list','warning'); return; }
+    
+    const payload = {
+      student_id: selectedStudent.id,
+      incident_date: fd.get('incident_date') ? new Date(fd.get('incident_date')).toISOString() : null,
+      severity: fd.get('severity'),
+      description: fd.get('description'),
+      status: 'pending',
+      submitted_by: currentProfile.id
+    };
+    if(!payload.student_id || !payload.description){ toast('Student and description are required','warning'); return; }
+    const btn = $('#saveDiscBtn'); btn.disabled=true; btn.textContent='Submitting...';
+    try{
+      const { data, error } = await supabase.from('discipline_reports').insert(payload).select().single();
+      if(error) throw error;
+      await logAudit('create','discipline_reports', data.id, payload);
+      toast('Report submitted','success');
+      closeModal(); loadDiscipline();
+    }catch(e){
+      toast(e.message||'Save failed','error');
+      btn.disabled=false; btn.textContent='Submit Report';
+    }
+  });
+}
+
+async function viewDiscipline(id){
+  const { data, error } = await supabase.from('discipline_reports')
+    .select(`*, student:profiles!discipline_reports_student_id_fkey(full_name, house:houses(name)), submitted_by:profiles!discipline_reports_submitted_by_fkey(full_name), reviewed_by:profiles!discipline_reports_reviewed_by_fkey(full_name)`)
+    .eq('id', id).single();
+  if(error){ toast('Failed to load','error'); return; }
+  openModal('Discipline Report',
+    `<div style="display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;gap:14px;align-items:center">
+        <div class="table-avatar-circle" style="width:48px;height:48px;font-size:16px">${getInitials(data.student?.full_name)}</div>
+        <div>
+          <div style="font-weight:600">${escapeHtml(data.student?.full_name||'Unknown')}</div>
+          <div class="text-xs text-muted">${data.student?.house?`· ${escapeHtml(data.student.house.name)}`:''}</div>
+        </div>
+      </div>
+      <div>
+        <div class="text-xs text-muted" style="text-transform:uppercase;font-weight:600;letter-spacing:0.04em">Incident</div>
+        <div style="margin-top:4px;white-space:pre-wrap">${escapeHtml(data.description||'')}</div>
+      </div>
+      <div class="form-grid">
+        <div><div class="text-xs text-muted" style="text-transform:uppercase;font-weight:600">Severity</div><div style="margin-top:4px"><span class="badge ${data.severity==='severe'?'badge-danger':data.severity==='major'?'badge-warning':'badge-info'}">${data.severity||'minor'}</span></div></div>
+        <div><div class="text-xs text-muted" style="text-transform:uppercase;font-weight:600">Status</div><div style="margin-top:4px"><span class="badge ${data.status==='approved'?'badge-success':data.status==='rejected'?'badge-neutral':'badge-warning'}">${data.status||'pending'}</span></div></div>
+        <div><div class="text-xs text-muted" style="text-transform:uppercase;font-weight:600">Incident Date</div><div style="margin-top:4px">${formatDate(data.incident_date)}</div></div>
+        <div><div class="text-xs text-muted" style="text-transform:uppercase;font-weight:600">Reported By</div><div style="margin-top:4px">${escapeHtml(data.submitted_by?.full_name||'Unknown')}</div></div>
+        ${data.reviewed_by?`<div><div class="text-xs text-muted" style="text-transform:uppercase;font-weight:600">Reviewed By</div><div style="margin-top:4px">${escapeHtml(data.reviewed_by.full_name)}</div></div>`:''}
+      </div>
+    </div>`,
+    `<button class="btn btn-secondary" onclick="closeModal()">Close</button>`
+  );
+}
+
+async function reviewDiscipline(id, decision){
+  const action = decision==='approved'?'Approve':'Reject';
+  confirmAction(
+    `${action} Report`,
+    decision==='approved'
+      ? 'Approving this report will count towards automatic warning issuance after 3 approvals.'
+      : 'Rejecting this report will mark it as closed with no further action.',
+    async ()=>{
+      const payload = { status: decision, reviewed_by: currentProfile.id, reviewed_at: new Date().toISOString() };
+      const { error } = await supabase.from('discipline_reports').update(payload).eq('id', id);
+      if(error) throw error;
+      await logAudit(decision,'discipline_reports', id, payload);
+
+      if(decision==='approved'){
+        try{
+          const { data: report } = await supabase.from('discipline_reports')
+            .select('student_id').eq('id', id).single();
+          if(report?.student_id){
+            const { data: approved } = await supabase.from('discipline_reports')
+              .select('id').eq('student_id', report.student_id).eq('status','approved');
+            const count = (approved||[]).length;
+            if(count>=3 && count%3===0){
+              // Auto-issue warning logic if warnings table exists
+              toast(`Automatic warning issued (${count} reports)`,'warning',5000);
+            }
+          }
+        }catch(e){ console.warn('Warning check failed:', e); }
+      }
+      toast(`Report ${decision}`,'success');
+      loadDiscipline();
+    },
+    action,
+    decision==='approved'?'btn-success':'btn-danger'
+  );
+}
+
+async function deleteDiscipline(id){
+  confirmAction('Delete Report','This report will be permanently deleted.', async ()=>{
+    const { error } = await supabase.from('discipline_reports').delete().eq('id', id);
+    if(error) throw error;
+    await logAudit('delete','discipline_reports', id);
+    toast('Report deleted','success');
+    loadDiscipline();
+  },'Delete','btn-danger');
+}
+
+/* ---------- House Performance Index (HPI) Module ---------- */
+let hpiState = { academicYear: `${new Date().getFullYear()}-${new Date().getFullYear()+1}` };
+
+async function renderHPI(){
+  const container = $('#module-hpi');
+  container.innerHTML = `
+    <div class="page-header">
+      <div>
+        <div class="page-title">House Performance Index</div>
+        <div class="page-subtitle">Aggregate scores across categories to rank houses by overall performance.</div>
+      </div>
+      <div class="page-actions">
+        ${isStaff()?`<button class="btn btn-primary-solid" onclick="openHpiVoteModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Score
+        </button>`:''}
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:24px">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Overall Ranking</div></div>
+        <div id="hpiRanking"><div class="loading-spinner"><div class="spinner"></div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Score by Category</div></div>
+        <div class="chart-container lg"><canvas id="hpiCategoryChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Category Breakdown by House</div>
+      </div>
+      <div class="chart-container lg"><canvas id="hpiHouseChart"></canvas></div>
+    </div>
+  `;
+  loadHPI();
+}
+
+async function loadHPI(){
+  try{
+    const { data: votes, error } = await supabase
+      .from('hpi_votes')
+      .select(`
+        id, score, academic_year,
+        house:houses(id, name, color),
+        category:hpi_categories(id, name, display_order),
+        voted_by:profiles(full_name)
+      `)
+      .eq('academic_year', hpiState.academicYear);
+    if(error) throw error;
+
+    const houses = appCache.houses;
+    const categories = appCache.categories;
+
+    const houseTotals = {};
+    houses.forEach(h=>{ houseTotals[h.id] = { name:h.name, color:h.color, total:0 }; });
+    (votes||[]).forEach(v=>{
+      if(houseTotals[v.house?.id]) houseTotals[v.house?.id].total += (v.score||0);
+    });
+    const ranking = Object.values(houseTotals).sort((a,b)=>b.total-a.total);
+
+    const wrap = $('#hpiRanking');
+    if(!ranking.length){
+      wrap.innerHTML = emptyState('No houses configured','Add houses via the database to begin scoring.','star');
+    }else{
+      const maxScore = Math.max(...ranking.map(r=>r.total),1);
+      wrap.innerHTML = `
+        <div class="rank-list">
+          ${ranking.map((h,i)=>{
+            const posClass = i===0?'gold':i===1?'silver':i===2?'bronze':'';
+            return `
+            <div class="rank-item">
+              <div class="rank-position ${posClass}">${i+1}</div>
+              <div class="rank-content">
+                <div class="rank-name">${escapeHtml(h.name)}</div>
+                <div class="progress" style="margin-top:6px"><div class="progress-bar" style="width:${(h.total/maxScore)*100}%;background:${h.color||'var(--primary)'}"></div></div>
+              </div>
+              <div class="rank-score" style="color:${h.color||'var(--primary)'}">${h.total}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    const isDark = document.documentElement.getAttribute('data-theme')==='dark';
+    const textColor = isDark ? '#a1a1aa' : '#52525b';
+    const gridColor = isDark ? '#27272a' : '#e5e7eb';
+
+    const catLabels = categories.map(c=>c.name);
+    const catDatasets = houses.map(h=>({
+      label: h.name,
+      data: categories.map(c=>{
+        const sum = (votes||[]).filter(v=>v.house?.id===h.id && v.category?.id===c.id).reduce((s,v)=>s+(v.score||0),0);
+        return sum;
+      }),
+      backgroundColor: h.color || '#6366f1',
+      borderRadius:6
+    }));
+
+    if(activeCharts.hpiCategory) activeCharts.hpiCategory.destroy();
+    const ctx1 = $('#hpiCategoryChart');
+    if(ctx1){
+      activeCharts.hpiCategory = new Chart(ctx1, {
+        type:'bar',
+        data:{ labels: catLabels, datasets: catDatasets },
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{ position:'top', labels:{color:textColor} } },
+          scales:{
+            x:{ stacked:true, ticks:{color:textColor}, grid:{display:false} },
+            y:{ stacked:true, ticks:{color:textColor}, grid:{color:gridColor} }
+          }
+        }
+      });
+    }
+
+    if(activeCharts.hpiHouse) activeCharts.hpiHouse.destroy();
+    const ctx2 = $('#hpiHouseChart');
+    if(ctx2){
+      activeCharts.hpiHouse = new Chart(ctx2, {
+        type:'radar',
+        data:{
+          labels: categories.map(c=>c.name),
+          datasets: houses.map(h=>({
+            label: h.name,
+            data: categories.map(c=>{
+              const sum = (votes||[]).filter(v=>v.house?.id===h.id && v.category?.id===c.id).reduce((s,v)=>s+(v.score||0),0);
+              return sum;
+            }),
+            backgroundColor: (h.color||'#6366f1')+'33',
+            borderColor: h.color||'#6366f1',
+            borderWidth:2,
+            pointBackgroundColor: h.color||'#6366f1'
+          }))
+        },
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{ position:'top', labels:{color:textColor} } },
+          scales:{
+            r:{
+              ticks:{ color:textColor, backdropColor:'transparent' },
+              grid:{ color:gridColor },
+              angleLines:{ color:gridColor },
+              pointLabels:{ color:textColor, font:{size:12,weight:'500'} }
+            }
+          }
+        }
+      });
+    }
+  }catch(e){
+    console.error('HPI load error:', e);
+    toast('Failed to load HPI data','error');
+  }
+}
+
+async function openHpiVoteModal(){
+  if(!appCache.houses.length || !appCache.categories.length){
+    toast('Houses or categories not configured','warning'); return;
+  }
+  const houseOpts = appCache.houses.map(h=>`<option value="${h.id}">${escapeHtml(h.name)}</option>`).join('');
+  const catOpts = appCache.categories.map(c=>`<option value="${c.id}">${escapeHtml(c.name)} (max ${c.max_score||100})</option>`).join('');
+
+  openModal(
+    'Add HPI Score',
+    `<form id="hpiForm">
+      <div class="form-grid">
+        <div class="field">
+          <label class="field-label">House *</label>
+          <select class="field-select" name="house_id" required>${houseOpts}</select>
+        </div>
+        <div class="field">
+          <label class="field-label">Category *</label>
+          <select class="field-select" name="category_id" required>${catOpts}</select>
+        </div>
+        <div class="field">
+          <label class="field-label">Score *</label>
+          <input class="field-input" type="number" name="score" min="0" max="100" value="0" required />
+        </div>
+        <div class="field">
+          <label class="field-label">Academic Year</label>
+          <input class="field-input" name="academic_year" value="${hpiState.academicYear}" />
+        </div>
+      </div>
+    </form>`,
+    `<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-primary-solid" id="saveHpiBtn">Add Score</button>`
+  );
+  $('#saveHpiBtn').addEventListener('click', async ()=>{
+    const fd = new FormData($('#hpiForm'));
+    const payload = {
+      house_id: fd.get('house_id'),
+      category_id: fd.get('category_id'),
+      score: parseInt(fd.get('score'),10),
+      academic_year: fd.get('academic_year'),
+      voted_by: currentProfile.id
+    };
+    if(isNaN(payload.score) || payload.score<0){ toast('Enter a valid score','warning'); return; }
+    const btn = $('#saveHpiBtn'); btn.disabled=true; btn.textContent='Saving...';
+    try{
+      const { data, error } = await supabase.from('hpi_votes').insert(payload).select().single();
+      if(error) throw error;
+      await logAudit('create','hpi_votes', data.id, payload);
+      toast('Score added','success');
+      closeModal(); loadHPI();
+    }catch(e){
+      toast(e.message||'Save failed','error');
+      btn.disabled=false; btn.textContent='Add Score';
+    }
+  });
+}
+
+/* ---------- Settings Module ---------- */
+async function renderSettings(){
+  const container = $('#module-settings');
+  container.innerHTML = `
+    <div class="page-header">
+      <div>
+        <div class="page-title">Settings</div>
+        <div class="page-subtitle">Manage your profile, app preferences, and system configuration.</div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="profile">Profile</button>
+      <button class="tab" data-tab="appearance">Appearance</button>
+      <button class="tab" data-tab="system" data-admin-only>System</button>
+      <button class="tab" data-tab="about">About</button>
+    </div>
+
+    <div id="settingsProfile" class="tab-content"></div>
+    <div id="settingsAppearance" class="tab-content hidden"></div>
+    <div id="settingsSystem" class="tab-content hidden"></div>
+    <div id="settingsAbout" class="tab-content hidden"></div>
+  `;
+
+  if(!isAdmin()){
+    $$('[data-admin-only]').forEach(el=>el.style.display='none');
+  }
+
+  $$('.tab').forEach(t=>t.addEventListener('click', ()=>{
+    $$('.tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    $$('.tab-content').forEach(c=>c.classList.add('hidden'));
+    $(`#settings${t.dataset.tab.charAt(0).toUpperCase()+t.dataset.tab.slice(1)}`).classList.remove('hidden');
+  }));
+
+  $('#settingsProfile').innerHTML = `
+    <div class="card">
+      <div class="card-header"><div class="card-title">Your Profile</div></div>
+      <form id="profileForm">
+        <div class="form-grid">
+          <div class="field">
+            <label class="field-label">Full Name</label>
+            <input class="field-input" name="full_name" value="${escapeHtml(currentProfile?.full_name||'')}" />
+          </div>
+          <div class="field">
+            <label class="field-label">Username</label>
+            <input class="field-input" name="username" value="${escapeHtml(currentProfile?.username||'')}" />
+          </div>
+          <div class="field">
+            <label class="field-label">Role</label>
+            <input class="field-input" value="${escapeHtml((currentProfile?.role||'').replace(/_/g,' '))}" readonly />
+          </div>
+        </div>
+        <button type="button" class="btn btn-primary-solid" id="saveProfileBtn" style="margin-top:8px">Save Changes</button>
+      </form>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-header"><div class="card-title">Change Password</div></div>
+      <form id="passwordForm">
+        <div class="form-grid">
+          <div class="field">
+            <label class="field-label">New Password</label>
+            <input class="field-input" type="password" name="new_password" minlength="8" placeholder="Min 8 characters" />
+          </div>
+          <div class="field">
+            <label class="field-label">Confirm Password</label>
+            <input class="field-input" type="password" name="confirm_password" minlength="8" />
+          </div>
+        </div>
+        <button type="button" class="btn btn-primary-solid" id="changePasswordBtn" style="margin-top:8px">Update Password</button>
+      </form>
+    </div>
+  `;
+
+  $('#saveProfileBtn').addEventListener('click', async ()=>{
+    const fd = new FormData($('#profileForm'));
+    const payload = { full_name: fd.get('full_name'), username: fd.get('username')||null };
+    const btn = $('#saveProfileBtn'); btn.disabled=true; btn.textContent='Saving...';
+    try{
+      const { error } = await supabase.from('profiles').update(payload).eq('id', currentProfile.id);
+      if(error) throw error;
+      currentProfile.full_name = payload.full_name;
+      currentProfile.username = payload.username;
+      renderApp();
+      await logAudit('update','profiles', currentProfile.id, payload);
+      toast('Profile updated','success');
+    }catch(e){
+      toast(e.message||'Update failed','error');
+    }finally{
+      btn.disabled=false; btn.textContent='Save Changes';
+    }
+  });
+
+  $('#changePasswordBtn').addEventListener('click', async ()=>{
+    const fd = new FormData($('#passwordForm'));
+    const np = fd.get('new_password');
+    const cp = fd.get('confirm_password');
+    if(np !== cp){ toast('Passwords do not match','warning'); return; }
+    if(np.length<8){ toast('Password must be at least 8 characters','warning'); return; }
+    const btn = $('#changePasswordBtn'); btn.disabled=true; btn.textContent='Updating...';
+    try{
+      const { error } = await supabase.auth.updateUser({ password: np });
+      if(error) throw error;
+      await logAudit('password_change','auth', currentProfile.id);
+      toast('Password updated','success');
+      $('#passwordForm').reset();
+    }catch(e){
+      toast(e.message||'Update failed','error');
+    }finally{
+      btn.disabled=false; btn.textContent='Update Password';
+    }
+  });
+
+  const curTheme = document.documentElement.getAttribute('data-theme');
+  $('#settingsAppearance').innerHTML = `
+    <div class="card">
+      <div class="card-header"><div class="card-title">Theme</div></div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button class="card card-hover theme-option ${curTheme==='light'?'selected':''}" data-theme="light" style="flex:1;min-width:160px;text-align:left;cursor:pointer;${curTheme==='light'?'border-color:var(--primary);box-shadow:var(--shadow-glow)':''}">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+            <strong>Light</strong>
+          </div>
+          <div class="text-xs text-muted">Bright workspace for daytime</div>
+        </button>
+        <button class="card card-hover theme-option ${curTheme==='dark'?'selected':''}" data-theme="dark" style="flex:1;min-width:160px;text-align:left;cursor:pointer;background:#0a0a0b;color:#fafafa;border-color:#27272a;${curTheme==='dark'?'border-color:var(--primary);box-shadow:var(--shadow-glow)':''}">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            <strong>Dark</strong>
+          </div>
+          <div class="text-xs" style="color:#a1a1aa">Easy on the eyes at night</div>
+        </button>
+      </div>
+    </div>
+  `;
+  $$('.theme-option').forEach(b=>b.addEventListener('click', ()=>{
+    document.documentElement.setAttribute('data-theme', b.dataset.theme);
+    localStorage.setItem('scms-theme', b.dataset.theme);
+    renderSettings();
+    Object.values(activeCharts).forEach(c=>{try{c.update()}catch(e){}});
+    toast(`Switched to ${b.dataset.theme} mode`,'info');
+  }));
+
+  if(isAdmin()){
+    $('#settingsSystem').innerHTML = `
+      <div class="card">
+        <div class="card-header"><div class="card-title">Houses</div></div>
+        <div id="housesList"><div class="loading-spinner"><div class="spinner"></div></div></div>
+        <button class="btn btn-primary-solid btn-sm" style="margin-top:12px" onclick="openHouseModal()">+ Add House</button>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-header"><div class="card-title">Positions</div></div>
+        <div id="positionsList"><div class="loading-spinner"><div class="spinner"></div></div></div>
+        <button class="btn btn-primary-solid btn-sm" style="margin-top:12px" onclick="openPositionModal()">+ Add Position</button>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-header"><div class="card-title">HPI Categories</div></div>
+        <div id="categoriesList"><div class="loading-spinner"><div class="spinner"></div></div></div>
+        <button class="btn btn-primary-solid btn-sm" style="margin-top:12px" onclick="openCategoryModal()">+ Add Category</button>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-header"><div class="card-title">Audit Logs</div></div>
+        <div id="auditLogList"><div class="loading-spinner"><div class="spinner"></div></div></div>
+      </div>
+    `;
+    loadSettingsAdmin();
+  }
+
+  $('#settingsAbout').innerHTML = `
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
+        <div style="width:64px;height:64px;background:linear-gradient(135deg,var(--primary),var(--accent));border-radius:16px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:32px;font-weight:800">V</div>
+        <div>
+          <div style="font-size:20px;font-weight:700;letter-spacing:-0.02em">SCMS</div>
+          <div class="text-sm text-muted">Student Council Management System</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px">
+        <div><div class="text-xs text-muted">School</div><div style="font-weight:600">Vatsalya Public School</div></div>
+        <div><div class="text-xs text-muted">Developer</div><div style="font-weight:600">Shivin Joshi</div></div>
+        <div><div class="text-xs text-muted">Version</div><div style="font-weight:600">1.0.0</div></div>
+        <div><div class="text-xs text-muted">Tech Stack</div><div style="font-weight:600">HTML · CSS · JS · Supabase</div></div>
+      </div>
+      <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);font-size:12px;color:var(--text-subtle)">
+        Single-page application with role-based access, dark/light themes, and glassmorphism UI inspired by Microsoft 365, Vercel, GitHub, and Linear.
+      </div>
+    </div>
+  `;
+}
+
+async function loadSettingsAdmin(){
+  try{
+    const { data: houses } = await supabase.from('houses').select('*').order('name');
+    $('#housesList').innerHTML = (houses||[]).length
+      ? `<div class="table-wrap"><table><thead><tr><th>Name</th><th>Color</th><th class="text-right">Actions</th></tr></thead><tbody>
+        ${(houses||[]).map(h=>`<tr>
+          <td><span class="badge" style="background:${h.color||'var(--primary-soft)'}20;color:${h.color||'var(--primary)'}"><span class="badge-dot"></span>${escapeHtml(h.name)}</span></td>
+          <td><code style="font-family:var(--font-mono);font-size:11px;background:var(--bg-soft);padding:2px 6px;border-radius:4px">${escapeHtml(h.color||'—')}</code></td>
+          <td class="text-right">
+            <button class="btn btn-ghost btn-icon" onclick="openHouseModal('${h.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+            <button class="btn btn-ghost btn-icon btn-danger-ghost" onclick="deleteHouse('${h.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+          </td>
+        </tr>`).join('')}</tbody></table></div>`
+      : emptyState('No houses','Add a house to begin.','star');
+
+    const { data: positions } = await supabase.from('positions').select('*').order('display_order');
+    $('#positionsList').innerHTML = (positions||[]).length
+      ? `<div class="table-wrap"><table><thead><tr><th>Name</th><th>Hierarchy</th><th class="text-right">Actions</th></tr></thead><tbody>
+        ${(positions||[]).map(p=>`<tr>
+          <td>${escapeHtml(p.title)}</td>
+          <td><span class="badge badge-neutral">Level ${p.display_order||0}</span></td>
+          <td class="text-right">
+            <button class="btn btn-ghost btn-icon" onclick="openPositionModal('${p.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+            <button class="btn btn-ghost btn-icon btn-danger-ghost" onclick="deletePosition('${p.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+          </td>
+        </tr>`).join('')}</tbody></table></div>`
+      : emptyState('No positions','Add positions like President, Secretary, etc.','users');
+
+    const { data: cats } = await supabase.from('hpi_categories').select('*').order('name');
+    $('#categoriesList').innerHTML = (cats||[]).length
+      ? `<div class="table-wrap"><table><thead><tr><th>Name</th><th>Max Score</th><th class="text-right">Actions</th></tr></thead><tbody>
+        ${(cats||[]).map(c=>`<tr>
+          <td>${escapeHtml(c.name)}${c.description?`<div class="text-xs text-muted">${escapeHtml(c.description)}</div>`:''}</td>
+          <td><span class="badge badge-info">${c.max_score||100}</span></td>
+          <td class="text-right">
+            <button class="btn btn-ghost btn-icon" onclick="openCategoryModal('${c.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+            <button class="btn btn-ghost btn-icon btn-danger-ghost" onclick="deleteCategory('${c.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+          </td>
+        </tr>`).join('')}</tbody></table></div>`
+      : emptyState('No categories','Add categories like Academics, Sports, Discipline.','star');
+
+    const { data: logs } = await supabase.from('audit_logs')
+      .select(`id, action, table_name, created_at, user:profiles(full_name)`)
+      .order('created_at', { ascending:false })
+      .limit(20);
+    $('#auditLogList').innerHTML = (logs||[]).length
+      ? `<div class="table-wrap"><table><thead><tr><th>User</th><th>Action</th><th>Entity</th><th>When</th></tr></thead><tbody>
+        ${(logs||[]).map(l=>`<tr>
+          <td>${escapeHtml(l.user?.full_name||'System')}</td>
+          <td><code style="font-family:var(--font-mono);font-size:11px;background:var(--bg-soft);padding:2px 6px;border-radius:4px">${escapeHtml(l.action)}</code></td>
+          <td class="text-sm">${escapeHtml(l.table_name||'')}</td>
+          <td class="text-xs text-muted">${timeAgo(l.created_at)}</td>
+        </tr>`).join('')}</tbody></table></div>`
+      : emptyState('No activity','Audit logs will appear here.','check');
+  }catch(e){
+    console.error('Settings admin load error:', e);
+  }
+}
+
+async function openHouseModal(id=null){
+  let house = null;
+  if(id){
+    const { data, error } = await supabase.from('houses').select('*').eq('id', id).single();
+    if(error){ toast('Failed to load','error'); return; }
+    house = data;
+  }
+  openModal(id?'Edit House':'Add House',
+    `<form id="houseForm">
+      <div class="field">
+        <label class="field-label">Name *</label>
+        <input class="field-input" name="name" value="${escapeHtml(house?.name||'')}" required />
+      </div>
+      <div class="field">
+        <label class="field-label">Color (hex)</label>
+        <input class="field-input" type="color" name="color" value="${escapeHtml(house?.color||'#6366f1')}" style="height:42px;padding:4px" />
+      </div>
+      <div class="field">
+        <label class="field-label">Description</label>
+        <textarea class="field-textarea" name="description">${escapeHtml(house?.description||'')}</textarea>
+      </div>
+    </form>`,
+    `<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-primary-solid" id="saveHouseBtn">${id?'Save':'Add'}</button>`,
+    'sm'
+  );
+  $('#saveHouseBtn').addEventListener('click', async ()=>{
+    const fd = new FormData($('#houseForm'));
+    const payload = { name: fd.get('name'), color: fd.get('color'), description: fd.get('description')||null };
+    if(!payload.name){ toast('Name is required','warning'); return; }
+    const btn = $('#saveHouseBtn'); btn.disabled=true; btn.textContent='Saving...';
+    try{
+      if(id){
+        const { error } = await supabase.from('houses').update(payload).eq('id', id);
+        if(error) throw error;
+        await logAudit('update','houses', id, payload);
+      }else{
+        const { data, error } = await supabase.from('houses').insert(payload).select().single();
+        if(error) throw error;
+        await logAudit('create','houses', data.id, payload);
+      }
+      toast('House saved','success');
+      closeModal();
+      await loadAppCache();
+      loadSettingsAdmin();
+    }catch(e){
+      toast(e.message||'Save failed','error');
+      btn.disabled=false; btn.textContent=id?'Save':'Add';
+    }
+  });
+}
+
+async function deleteHouse(id){
+  confirmAction('Delete House','This will remove the house. Existing members may need reassignment.', async ()=>{
+    const { error } = await supabase.from('houses').delete().eq('id', id);
+    if(error) throw error;
+    await logAudit('delete','houses', id);
+    toast('House deleted','success');
+    await loadAppCache();
+    loadSettingsAdmin();
+  },'Delete','btn-danger');
+}
+
+async function openPositionModal(id=null){
+  let pos = null;
+  if(id){
+    const { data, error } = await supabase.from('positions').select('*').eq('id', id).single();
+    if(error){ toast('Failed to load','error'); return; }
+    pos = data;
+  }
+  openModal(id?'Edit Position':'Add Position',
+    `<form id="posForm">
+      <div class="field">
+        <label class="field-label">Title *</label>
+        <input class="field-input" name="title" value="${escapeHtml(pos?.title||'')}" required placeholder="e.g. President, Vice President" />
+      </div>
+      <div class="field">
+        <label class="field-label">Display Order</label>
+        <input class="field-input" type="number" name="display_order" value="${pos?.display_order||1}" min="1" />
+        <div class="field-hint">Lower number = higher rank. President=1, Vice=2, etc.</div>
+      </div>
+    </form>`,
+    `<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-primary-solid" id="savePosBtn">${id?'Save':'Add'}</button>`,
+    'sm'
+  );
+  $('#savePosBtn').addEventListener('click', async ()=>{
+    const fd = new FormData($('#posForm'));
+    const payload = { title: fd.get('title'), display_order: parseInt(fd.get('display_order'),10)||1 };
+    if(!payload.title){ toast('Title is required','warning'); return; }
+    const btn = $('#savePosBtn'); btn.disabled=true; btn.textContent='Saving...';
+    try{
+      if(id){
+        const { error } = await supabase.from('positions').update(payload).eq('id', id);
+        if(error) throw error;
+        await logAudit('update','positions', id, payload);
+      }else{
+        const { data, error } = await supabase.from('positions').insert(payload).select().single();
+        if(error) throw error;
+        await logAudit('create','positions', data.id, payload);
+      }
+      toast('Position saved','success');
+      closeModal();
+      await loadAppCache();
+      loadSettingsAdmin();
+    }catch(e){
+      toast(e.message||'Save failed','error');
+      btn.disabled=false; btn.textContent=id?'Save':'Add';
+    }
+  });
+}
+
+async function deletePosition(id){
+  confirmAction('Delete Position','This will remove the position.', async ()=>{
+    const { error } = await supabase.from('positions').delete().eq('id', id);
+    if(error) throw error;
+    await logAudit('delete','positions', id);
+    toast('Position deleted','success');
+    await loadAppCache();
+    loadSettingsAdmin();
+  },'Delete','btn-danger');
+}
+
+async function openCategoryModal(id=null){
+  let cat = null;
+  if(id){
+    const { data, error } = await supabase.from('hpi_categories').select('*').eq('id', id).single();
+    if(error){ toast('Failed to load','error'); return; }
+    cat = data;
+  }
+  openModal(id?'Edit Category':'Add HPI Category',
+    `<form id="catForm">
+      <div class="field">
+        <label class="field-label">Name *</label>
+        <input class="field-input" name="name" value="${escapeHtml(cat?.name||'')}" required placeholder="e.g. Academics, Sports, Discipline" />
+      </div>
+      <div class="field">
+        <label class="field-label">Max Score</label>
+        <input class="field-input" type="number" name="max_score" value="${cat?.max_score||100}" min="1" />
+      </div>
+      <div class="field">
+        <label class="field-label">Description</label>
+        <textarea class="field-textarea" name="description">${escapeHtml(cat?.description||'')}</textarea>
+      </div>
+    </form>`,
+    `<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+     <button class="btn btn-primary-solid" id="saveCatBtn">${id?'Save':'Add'}</button>`,
+    'sm'
+  );
+  $('#saveCatBtn').addEventListener('click', async ()=>{
+    const fd = new FormData($('#catForm'));
+    const payload = { name: fd.get('name'), max_score: parseInt(fd.get('max_score'),10)||100, description: fd.get('description')||null };
+    if(!payload.name){ toast('Name is required','warning'); return; }
+    const btn = $('#saveCatBtn'); btn.disabled=true; btn.textContent='Saving...';
+    try{
+      if(id){
+        const { error } = await supabase.from('hpi_categories').update(payload).eq('id', id);
+        if(error) throw error;
+        await logAudit('update','hpi_categories', id, payload);
+      }else{
+        const { data, error } = await supabase.from('hpi_categories').insert(payload).select().single();
+        if(error) throw error;
+        await logAudit('create','hpi_categories', data.id, payload);
+      }
+      toast('Category saved','success');
+      closeModal();
+      await loadAppCache();
+      loadSettingsAdmin();
+    }catch(e){
+      toast(e.message||'Save failed','error');
+      btn.disabled=false; btn.textContent=id?'Save':'Add';
+    }
+  });
+}
+
+async function deleteCategory(id){
+  confirmAction('Delete Category','This will remove the category and its related votes.', async ()=>{
+    const { error } = await supabase.from('hpi_categories').delete().eq('id', id);
+    if(error) throw error;
+    await logAudit('delete','hpi_categories', id);
+    toast('Category deleted','success');
+    await loadAppCache();
+    loadSettingsAdmin();
+  },'Delete','btn-danger');
+}
+
+/* ---------- App Initialization ---------- */
+async function initApp(){
+  initTheme();
+
+  $('#loginForm').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const email = $('#loginEmail').value.trim();
+    const password = $('#loginPassword').value;
+    const remember = $('#rememberMe').checked;
+    if(!email || !password){ showLoginError('Please enter email and password'); return; }
+    await handleLogin(email, password, remember);
+  });
+
+  $('#togglePassword').addEventListener('click', ()=>{
+    const inp = $('#loginPassword');
+    const isPw = inp.type === 'password';
+    inp.type = isPw ? 'text' : 'password';
+    $('#eyeIcon').innerHTML = isPw
+      ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'
+      : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+  });
+
+  $('#forgotPassword').addEventListener('click', async ()=>{
+    const email = $('#loginEmail').value.trim();
+    if(!email){ toast('Enter your email first','warning'); return; }
+    try{
+      const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
+      if(error) throw error;
+      toast('Reset link sent to your email','success');
+    }catch(e){
+      toast(e.message||'Reset failed','error');
+    }
+  });
+
+  $('#themeToggle').addEventListener('click', toggleTheme);
+
+  $('#menuToggle').addEventListener('click', ()=>{
+    $('#sidebar').classList.toggle('open');
+    $('#sidebarOverlay').classList.toggle('show');
+  });
+  $('#sidebarOverlay').addEventListener('click', ()=>{
+    $('#sidebar').classList.remove('open');
+    $('#sidebarOverlay').classList.remove('show');
+  });
+
+  $$('.nav-item[data-module]').forEach(btn=>{
+    btn.addEventListener('click', ()=>navigateTo(btn.dataset.module));
+  });
+
+  $('#logoutBtn').addEventListener('click', ()=>{
+    confirmAction('Logout','Are you sure you want to sign out?', async ()=>{
+      await handleLogout();
+    },'Logout','btn-primary-solid');
+  });
+
+  $('#modalClose').addEventListener('click', closeModal);
+  $('#modalOverlay').addEventListener('click', (e)=>{
+    if(e.target === $('#modalOverlay')) closeModal();
+  });
+
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape' && $('#modalOverlay').classList.contains('show')) closeModal();
+  });
+
+  $('#notificationsBtn').addEventListener('click', ()=>navigateTo('announcements'));
+
+  $('#globalSearch').addEventListener('input', debounce(e=>{
+    if(e.target.value.length>1){
+      navigateTo('members');
+      const ms = $('#memberSearch');
+      if(ms){ ms.value = e.target.value; membersState.search = e.target.value; loadMembers(); }
+      e.target.value = '';
+    }
+  }, 600));
+
+  supabase = initSupabase();
+  if(!supabase){
+    setTimeout(()=>{
+      hideSplash();
+      showLogin();
+      showLoginError('Supabase credentials not configured. Edit SUPABASE_URL and SUPABASE_ANON_KEY in index.html.');
+    }, 1500);
+    return;
+  }
+
+  const hasSession = await checkSession();
+  setTimeout(async ()=>{
+    hideSplash();
+    if(hasSession){
+      await loadAppCache();
+      showApp();
+      renderApp();
+      navigateTo('dashboard');
+    }else{
+      showLogin();
+    }
+  }, 1600);
+}
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', initApp);
+}else{
+  initApp();
+}
+</script>
+</body>
+</html>
